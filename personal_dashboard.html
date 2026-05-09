@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Life Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161e;
+    --bg3: #1a1e2a;
+    --card: #1e2230;
+    --card2: #242840;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --teal: #4ecdc4;
+    --rose: #e86f8a;
+    --violet: #8b7ff5;
+    --green: #56d18a;
+    --orange: #f4a261;
+    --blue: #4da6ff;
+    --text: #e8eaf0;
+    --text2: #9aa0b8;
+    --text3: #6b7191;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; left:0; top:0; bottom:0;
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    z-index: 100;
+    padding: 28px 0 20px;
+  }
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--gold2);
+    line-height: 1.2;
+  }
+  .logo p { font-size: 11px; color: var(--text3); margin-top: 3px; letter-spacing:1px; }
+  .nav { flex:1; padding: 20px 12px; display:flex; flex-direction:column; gap:4px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding: 10px 14px; border-radius: 10px;
+    cursor:pointer; transition:all .2s;
+    font-size: 13.5px; font-weight:500; color: var(--text2);
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: linear-gradient(135deg,rgba(201,168,76,.18),rgba(78,205,196,.12)); color: var(--gold2); }
+  .nav-item .icon { font-size:16px; width:20px; text-align:center; }
+  .nav-section { font-size:10px; letter-spacing:2px; color: var(--text3); padding: 14px 14px 6px; text-transform:uppercase; }
+  .sidebar-date {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text3);
+  }
+  .sidebar-date strong { display:block; font-family:'JetBrains Mono'; font-size:13px; color:var(--text2); margin-top:2px; }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    min-height: 100vh;
+    padding: 32px 36px;
+  }
+
+  /* SECTION */
+  .section { display:none; animation: fadeIn .3s ease; }
+  .section.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .page-header { margin-bottom:28px; }
+  .page-header h2 { font-family:'Playfair Display',serif; font-size:28px; color:var(--gold2); }
+  .page-header p { font-size:13px; color:var(--text3); margin-top:4px; }
+
+  /* GRID */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity:0.4;
+  }
+  .card-title {
+    font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color: var(--text3); margin-bottom:14px; display:flex; align-items:center; gap:8px;
+  }
+  .card-title .dot { width:6px;height:6px;border-radius:50%; flex-shrink:0; }
+
+  /* STAT CARDS */
+  .stat-value { font-family:'Playfair Display',serif; font-size:32px; color:var(--text); }
+  .stat-sub { font-size:12px; color:var(--text3); margin-top:4px; }
+  .stat-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    background:rgba(86,209,138,.15); color:var(--green);
+    border-radius:20px; padding:3px 10px; font-size:11px; font-weight:600; margin-top:8px;
+  }
+
+  /* PROGRESS BAR */
+  .prog-wrap { margin: 8px 0; }
+  .prog-label { display:flex; justify-content:space-between; font-size:12px; color:var(--text2); margin-bottom:5px; }
+  .prog-track { background:rgba(255,255,255,.06); border-radius:99px; height:6px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:99px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+  /* DONUT */
+  .donut-wrap { display:flex; align-items:center; gap:24px; }
+  .donut-svg { flex-shrink:0; }
+  .donut-legend { display:flex; flex-direction:column; gap:8px; flex:1; }
+  .legend-item { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text2); }
+  .legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+
+  /* INPUT */
+  input, select, textarea {
+    background: var(--bg3); border:1px solid var(--border2);
+    color:var(--text); border-radius:var(--radius-sm); padding:9px 14px;
+    font-family:'DM Sans',sans-serif; font-size:13px; width:100%;
+    transition:border .2s; outline:none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+  label { font-size:12px; color:var(--text2); margin-bottom:4px; display:block; }
+  .form-group { margin-bottom:14px; }
+  .btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #1a1200; font-weight:700; font-size:13px;
+    padding:9px 20px; border:none; border-radius:var(--radius-sm);
+    cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif;
+  }
+  .btn:hover { opacity:.9; transform:translateY(-1px); }
+  .btn-sm { padding:6px 14px; font-size:12px; }
+  .btn-ghost {
+    background:transparent; border:1px solid var(--border2); color:var(--text2);
+    font-weight:500;
+  }
+  .btn-ghost:hover { border-color:var(--gold); color:var(--gold2); background:rgba(201,168,76,.08); }
+
+  /* TABLE */
+  .table-wrap { overflow-x:auto; margin-top:12px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:var(--bg3); color:var(--text3); font-weight:500; font-size:11px; letter-spacing:1px; text-transform:uppercase; padding:10px 14px; text-align:left; }
+  td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text2); }
+  tr:hover td { background:rgba(255,255,255,.03); }
+  .tag {
+    display:inline-block; padding:2px 10px; border-radius:99px; font-size:11px; font-weight:500;
+  }
+
+  /* CALENDAR */
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px; }
+  .cal-day-header { text-align:center; font-size:10px; color:var(--text3); letter-spacing:1px; padding-bottom:4px; }
+  .cal-day {
+    aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; position:relative;
+    border: 1px solid transparent;
+  }
+  .cal-day:hover { border-color:var(--border2); background:var(--bg3); }
+  .cal-day.empty { opacity:0; pointer-events:none; }
+  .cal-day.today { border-color:var(--gold); color:var(--gold2); }
+  .cal-day.has-gym { background:rgba(139,127,245,.25); color:var(--violet); }
+  .cal-day.has-badminton { background:rgba(78,205,196,.2); color:var(--teal); }
+  .cal-day.has-walk { background:rgba(86,209,138,.2); color:var(--green); }
+  .cal-day.has-multi { background:linear-gradient(135deg,rgba(139,127,245,.3),rgba(78,205,196,.3)); }
+  .cal-legend { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+  .cal-legend-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text2); }
+  .cal-dot { width:9px;height:9px;border-radius:50%; }
+  .cal-controls { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-controls span { font-size:14px; font-weight:600; }
+  .cal-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text2); padding:5px 12px; border-radius:8px; cursor:pointer; font-size:14px; transition:all .2s; }
+  .cal-btn:hover { border-color:var(--gold); color:var(--gold2); }
+
+  /* SKINCARE */
+  .skincare-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px; }
+  .sk-slot {
+    padding:8px 4px; text-align:center; border-radius:8px;
+    font-size:10.5px; cursor:pointer; border:1px solid var(--border);
+    transition:all .15s; min-height:52px; display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  }
+  .sk-slot:hover { border-color:var(--border2); }
+  .sk-slot .sk-date { font-size:9px; color:var(--text3); }
+  .sk-dot { width:6px;height:6px;border-radius:50%;margin:1px; display:inline-block; }
+
+  /* BOOK */
+  .book-card {
+    background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:16px;
+    cursor:pointer; transition:all .2s; position:relative; overflow:hidden;
+  }
+  .book-card:hover { border-color:var(--border2); transform:translateY(-2px); }
+  .book-card.expanded .book-notes { display:block; }
+  .book-notes { display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+  .book-rating { display:flex; gap:2px; margin:4px 0; }
+  .star { font-size:13px; }
+
+  /* GOAL */
+  .goal-item {
+    background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+    display:flex; align-items:center; gap:14px; transition:all .2s;
+  }
+  .goal-item:hover { border-color:var(--border2); }
+  .goal-check {
+    width:22px;height:22px;border-radius:6px; border:2px solid var(--border2);
+    display:flex;align-items:center;justify-content:center; cursor:pointer; flex-shrink:0;
+    transition:all .2s; font-size:13px;
+  }
+  .goal-check.done { background:var(--green); border-color:var(--green); }
+
+  /* INVESTMENT */
+  .invest-type { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .invest-tab { padding:7px 16px; border-radius:99px; font-size:12px; font-weight:500; cursor:pointer; border:1px solid var(--border); color:var(--text2); transition:all .2s; }
+  .invest-tab.active { background:rgba(201,168,76,.15); border-color:var(--gold); color:var(--gold2); }
+
+  /* RESPONSIVE helper */
+  .row { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .spacer { margin-top:20px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:5px; height:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--card2); border-radius:99px; }
+
+  /* Chart bar */
+  .bar-chart { display:flex; gap:10px; align-items:flex-end; height:100px; margin-top:8px; }
+  .bar-col { flex:1; display:flex;flex-direction:column;align-items:center;gap:4px; }
+  .bar { border-radius:4px 4px 0 0; width:100%; transition:height .6s ease; min-height:4px; }
+  .bar-label { font-size:10px; color:var(--text3); }
+  .bar-val { font-size:10px; color:var(--text2); font-family:'JetBrains Mono'; }
+
+  .section-divider { height:1px; background:var(--border); margin:24px 0; }
+  .pill { display:inline-block; padding:3px 12px; border-radius:99px; font-size:11.5px; font-weight:500; }
+  .number-big { font-family:'JetBrains Mono'; font-size:22px; font-weight:500; }
+  .mt4{margin-top:4px} .mt8{margin-top:8px} .mt12{margin-top:12px} .mt16{margin-top:16px} .mt20{margin-top:20px} .mb12{margin-bottom:12px}
+  .flex{display:flex} .gap8{gap:8px} .gap12{gap:12px} .ai-center{align-items:center} .jc-between{justify-content:space-between}
+
+  /* Notification dot */
+  .notif { width:7px;height:7px;background:var(--rose);border-radius:50%;display:inline-block;margin-left:4px; }
+
+  /* Forecast card */
+  .scenario-card {
+    border:1px solid var(--border); border-radius:12px; padding:18px;
+    background:var(--bg3); cursor:pointer; transition:all .2s;
+  }
+  .scenario-card:hover { border-color:var(--gold); }
+  .scenario-card h4 { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+  .scenario-card p { font-size:12px; color:var(--text2); line-height:1.6; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>Life<br>Dashboard</h1>
+    <p>PERSONAL OS</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Tài chính</div>
+    <div class="nav-item active" onclick="go('overview')"><span class="icon">📊</span> Tổng quan</div>
+    <div class="nav-item" onclick="go('income')"><span class="icon">💰</span> Thu nhập</div>
+    <div class="nav-item" onclick="go('investment')"><span class="icon">📈</span> Đầu tư & Quỹ</div>
+    <div class="nav-item" onclick="go('forecast')"><span class="icon">🔮</span> Dự báo tài sản</div>
+    <div class="nav-section">Phát triển</div>
+    <div class="nav-item" onclick="go('goals')"><span class="icon">🎯</span> Mục tiêu năm</div>
+    <div class="nav-item" onclick="go('books')"><span class="icon">📚</span> Sách đã đọc</div>
+    <div class="nav-section">Sức khoẻ</div>
+    <div class="nav-item" onclick="go('workout')"><span class="icon">💪</span> Lịch tập luyện</div>
+    <div class="nav-item" onclick="go('skincare')"><span class="icon">✨</span> Skincare</div>
+  </nav>
+  <div class="sidebar-date">
+    Hôm nay<strong id="today-date"></strong>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== OVERVIEW ===== -->
+<section id="overview" class="section active">
+  <div class="page-header">
+    <h2>Tổng quan cá nhân</h2>
+    <p>Nhìn toàn cảnh cuộc sống — tài chính, sức khoẻ, mục tiêu</p>
+  </div>
+  <div class="grid-4 mb12">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thu nhập tháng</div>
+      <div class="stat-value" id="ov-income">—</div>
+      <div class="stat-sub">Chủ động + Thụ động</div>
+      <div class="stat-badge">▲ tổng tháng này</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Tổng tài sản đầu tư</div>
+      <div class="stat-value" id="ov-asset">—</div>
+      <div class="stat-sub">Quỹ + Tiết kiệm + BH</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Buổi tập tháng này</div>
+      <div class="stat-value" id="ov-workout">0</div>
+      <div class="stat-sub">Gym · Cầu lông · Đi bộ</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--rose)"></span>Sách đã đọc</div>
+      <div class="stat-value" id="ov-books">0</div>
+      <div class="stat-sub">trong năm nay</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Mục tiêu năm — tiến độ</div>
+      <div id="ov-goals-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Phân bổ tài sản</div>
+      <div class="donut-wrap" id="ov-donut-wrap">
+        <svg class="donut-svg" width="110" height="110" viewBox="0 0 110 110" id="donut-svg"></svg>
+        <div class="legend-item" id="donut-legend"></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-3 spacer">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>Streak tập luyện</div>
+      <div class="stat-value" id="ov-streak">0</div>
+      <div class="stat-sub">ngày liên tiếp</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Skincare hôm nay</div>
+      <div id="ov-skincare" style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.8;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Đang đọc</div>
+      <div id="ov-reading" style="font-size:13px;color:var(--text2);margin-top:4px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INCOME ===== -->
+<section id="income" class="section">
+  <div class="page-header">
+    <h2>Thu nhập</h2>
+    <p>Theo dõi thu nhập chủ động và thụ động theo tháng</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Nhập thu nhập tháng</div>
+      <div class="form-group"><label>Lương (chủ động)</label><input type="number" id="salary-input" placeholder="VD: 20000000"></div>
+      <div class="form-group"><label>Referral / Hoa hồng (thụ động)</label><input type="number" id="referral-input" placeholder="VD: 3000000"></div>
+      <div class="form-group"><label>Thu nhập khác</label><input type="number" id="other-income-input" placeholder="VD: 500000"></div>
+      <div class="form-group"><label>Tháng</label><input type="month" id="income-month"></div>
+      <button class="btn" onclick="saveIncome()">💾 Lưu tháng này</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Tổng quan tháng hiện tại</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px;">
+        <div>
+          <div style="font-size:12px;color:var(--text3);">Lương</div>
+          <div class="number-big" style="color:var(--gold2)" id="display-salary">—</div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text3);">Referral thụ động</div>
+          <div class="number-big" style="color:var(--teal)" id="display-referral">—</div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text3);">Khác</div>
+          <div class="number-big" style="color:var(--text2)" id="display-other">—</div>
+        </div>
+        <div class="section-divider" style="margin:4px 0"></div>
+        <div>
+          <div style="font-size:12px;color:var(--text3);">Tổng thu nhập</div>
+          <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--green);" id="display-total">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Biểu đồ thu nhập 6 tháng</div>
+    <div class="bar-chart" id="income-chart"></div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Lịch sử thu nhập</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tháng</th><th>Lương</th><th>Referral</th><th>Khác</th><th>Tổng</th></tr></thead>
+        <tbody id="income-history"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INVESTMENT ===== -->
+<section id="investment" class="section">
+  <div class="page-header">
+    <h2>Đầu tư & Quỹ</h2>
+    <p>Quản lý danh mục: Chứng chỉ quỹ · Tiết kiệm · Bảo hiểm</p>
+  </div>
+  <div class="invest-type">
+    <div class="invest-tab active" onclick="switchInvest('fund',this)">📊 Chứng chỉ quỹ</div>
+    <div class="invest-tab" onclick="switchInvest('saving',this)">🏦 Tiết kiệm</div>
+    <div class="invest-tab" onclick="switchInvest('insurance',this)">🛡️ Bảo hiểm</div>
+  </div>
+
+  <!-- FUND -->
+  <div id="invest-fund">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thêm chứng chỉ quỹ</div>
+        <div class="form-group"><label>Tên quỹ</label><input id="fund-name" placeholder="VD: DCDS, VFMVSF..."></div>
+        <div class="form-group"><label>Số NAV / đơn vị (VND)</label><input type="number" id="fund-nav" placeholder="VD: 15000"></div>
+        <div class="form-group"><label>Số đơn vị nắm giữ</label><input type="number" id="fund-units" placeholder="VD: 1000"></div>
+        <div class="form-group"><label>Giá vốn TB / đơn vị</label><input type="number" id="fund-cost" placeholder="VD: 12000"></div>
+        <div class="form-group"><label>Ngày mua gần nhất</label><input type="date" id="fund-date"></div>
+        <button class="btn" onclick="addFund()">+ Thêm quỹ</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Tổng quan quỹ</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="fund-summary">
+          <div style="color:var(--text3);font-size:13px;">Chưa có dữ liệu — thêm quỹ để xem tổng quan.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card spacer">
+      <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Danh mục quỹ</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Tên quỹ</th><th>Đơn vị</th><th>NAV hiện tại</th><th>Giá vốn</th><th>Giá trị</th><th>Lãi/Lỗ</th><th>%</th><th></th></tr></thead>
+        <tbody id="fund-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVING -->
+  <div id="invest-saving" style="display:none">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thêm sổ tiết kiệm</div>
+        <div class="form-group"><label>Ngân hàng</label><input id="sav-bank" placeholder="VD: Techcombank"></div>
+        <div class="form-group"><label>Số tiền gốc (VND)</label><input type="number" id="sav-amount" placeholder="VD: 50000000"></div>
+        <div class="form-group"><label>Lãi suất / năm (%)</label><input type="number" id="sav-rate" placeholder="VD: 7.2" step="0.1"></div>
+        <div class="form-group"><label>Kỳ hạn (tháng)</label><input type="number" id="sav-term" placeholder="VD: 12"></div>
+        <div class="form-group"><label>Ngày gửi</label><input type="date" id="sav-date"></div>
+        <button class="btn" onclick="addSaving()">+ Thêm tiết kiệm</button>
+      </div>
+      <div class="card" id="sav-summary-card">
+        <div class="card-title"><span class="dot" style="background:var(--green)"></span>Tổng tiết kiệm</div>
+        <div id="sav-summary" style="color:var(--text3);font-size:13px;">Chưa có dữ liệu.</div>
+      </div>
+    </div>
+    <div class="card spacer">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Danh sách tiết kiệm</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Ngân hàng</th><th>Số tiền gốc</th><th>Lãi suất</th><th>Kỳ hạn</th><th>Ngày đáo hạn</th><th>Lãi ước tính</th><th></th></tr></thead>
+        <tbody id="sav-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSURANCE -->
+  <div id="invest-insurance" style="display:none">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thêm bảo hiểm</div>
+        <div class="form-group"><label>Công ty bảo hiểm</label><input id="ins-company" placeholder="VD: Manulife, Prudential..."></div>
+        <div class="form-group"><label>Loại bảo hiểm</label>
+          <select id="ins-type"><option>Bảo hiểm nhân thọ</option><option>Bảo hiểm sức khỏe</option><option>Bảo hiểm đầu tư</option><option>Bảo hiểm hỗn hợp</option></select>
+        </div>
+        <div class="form-group"><label>Phí đóng / năm (VND)</label><input type="number" id="ins-premium" placeholder="VD: 15000000"></div>
+        <div class="form-group"><label>Mệnh giá / Quyền lợi (VND)</label><input type="number" id="ins-value" placeholder="VD: 500000000"></div>
+        <div class="form-group"><label>Ngày bắt đầu</label><input type="date" id="ins-start"></div>
+        <div class="form-group"><label>Thời hạn hợp đồng (năm)</label><input type="number" id="ins-years" placeholder="VD: 20"></div>
+        <button class="btn" onclick="addInsurance()">+ Thêm bảo hiểm</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--rose)"></span>Tổng bảo hiểm</div>
+        <div id="ins-summary" style="color:var(--text3);font-size:13px;">Chưa có dữ liệu.</div>
+      </div>
+    </div>
+    <div class="card spacer">
+      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Danh sách bảo hiểm</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Công ty</th><th>Loại</th><th>Phí/năm</th><th>Quyền lợi</th><th>Ngày ĐH</th><th>Còn lại</th><th></th></tr></thead>
+        <tbody id="ins-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FORECAST ===== -->
+<section id="forecast" class="section">
+  <div class="page-header">
+    <h2>Dự báo & Nhân tài sản</h2>
+    <p>Phân tích các phương án tăng trưởng tài sản dài hạn</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thông số tính toán</div>
+      <div class="form-group"><label>Tài sản hiện tại (VND)</label><input type="number" id="fc-current" placeholder="VD: 200000000"></div>
+      <div class="form-group"><label>Tiết kiệm thêm / tháng (VND)</label><input type="number" id="fc-monthly" placeholder="VD: 5000000"></div>
+      <div class="form-group"><label>Mục tiêu tài sản (VND)</label><input type="number" id="fc-target" placeholder="VD: 1000000000"></div>
+      <div class="form-group"><label>Thời gian (năm)</label><input type="number" id="fc-years" placeholder="VD: 10" value="10"></div>
+      <button class="btn" onclick="runForecast()">🔮 Phân tích ngay</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Kết quả tổng hợp</div>
+      <div id="fc-result" style="color:var(--text3);font-size:13px;line-height:1.8;">Nhập thông số và bấm Phân tích để xem kết quả.</div>
+    </div>
+  </div>
+  <div class="spacer" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;" id="fc-scenarios">
+    <div class="scenario-card">
+      <h4 style="color:var(--text3)">📦 Phương án An toàn</h4>
+      <p>Gửi tiết kiệm ngân hàng<br>Lãi suất ~7%/năm<br>Rủi ro: Rất thấp</p>
+      <div id="fc-s1" style="margin-top:10px;font-size:13px;color:var(--text2)">—</div>
+    </div>
+    <div class="scenario-card">
+      <h4 style="color:var(--gold2)">📈 Phương án Cân bằng</h4>
+      <p>Quỹ mở + Tiết kiệm<br>Lãi suất ~12%/năm<br>Rủi ro: Trung bình</p>
+      <div id="fc-s2" style="margin-top:10px;font-size:13px;color:var(--text2)">—</div>
+    </div>
+    <div class="scenario-card">
+      <h4 style="color:var(--teal)">🚀 Phương án Tăng trưởng</h4>
+      <p>Cổ phiếu + Quỹ chủ động<br>Lãi suất ~18%/năm<br>Rủi ro: Cao hơn</p>
+      <div id="fc-s3" style="margin-top:10px;font-size:13px;color:var(--text2)">—</div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Biểu đồ tăng trưởng tài sản theo năm</div>
+    <div class="bar-chart" id="fc-chart" style="height:140px;"></div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Gợi ý chiến lược nhân tài sản</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;" id="fc-tips">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--gold2);margin-bottom:6px;">💡 Quy tắc 50/30/20</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">50% chi tiêu thiết yếu · 30% giải trí & phát triển · 20% tiết kiệm & đầu tư. Đây là nền tảng để xây dựng tài sản bền vững.</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--teal);margin-bottom:6px;">📊 Đa dạng hoá danh mục</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">Quỹ tích cực 40% · Tiết kiệm 30% · Bảo hiểm đầu tư 20% · Tiền mặt dự phòng 10% cho linh hoạt và an toàn.</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--violet);margin-bottom:6px;">⚡ DCA — Đầu tư đều đặn</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">Mua quỹ cố định mỗi tháng bất kể giá thị trường. Chiến lược này giảm rủi ro timing và tận dụng lãi kép hiệu quả nhất.</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px;">🏆 Thu nhập thụ động</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">Tăng referral, affiliate, hoặc cho thuê tài sản. Mỗi nguồn thu nhập thụ động thêm đẩy nhanh đáng kể việc đạt mục tiêu tài chính.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GOALS ===== -->
+<section id="goals" class="section">
+  <div class="page-header">
+    <h2>Mục tiêu năm</h2>
+    <p>Theo dõi tiến độ mục tiêu tháng và năm</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thêm mục tiêu mới</div>
+      <div class="form-group"><label>Tiêu đề mục tiêu</label><input id="goal-title" placeholder="VD: Đọc 20 quyển sách"></div>
+      <div class="form-group"><label>Phạm vi</label>
+        <select id="goal-scope"><option>Năm 2025</option><option>Tháng 1</option><option>Tháng 2</option><option>Tháng 3</option><option>Tháng 4</option><option>Tháng 5</option><option>Tháng 6</option><option>Tháng 7</option><option>Tháng 8</option><option>Tháng 9</option><option>Tháng 10</option><option>Tháng 11</option><option>Tháng 12</option></select>
+      </div>
+      <div class="form-group"><label>Danh mục</label>
+        <select id="goal-cat"><option>💼 Tài chính</option><option>📚 Học tập</option><option>💪 Sức khoẻ</option><option>👔 Sự nghiệp</option><option>🧘 Cá nhân</option><option>✈️ Trải nghiệm</option></select>
+      </div>
+      <div class="form-group"><label>Tiến độ hiện tại (%)</label><input type="number" id="goal-progress" placeholder="0" min="0" max="100" value="0"></div>
+      <div class="form-group"><label>Ghi chú</label><textarea id="goal-note" rows="2" placeholder="Mô tả, deadline, hành động cụ thể..."></textarea></div>
+      <button class="btn" onclick="addGoal()">+ Thêm mục tiêu</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Thống kê</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;" id="goals-stats"></div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Danh sách mục tiêu</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="goal-filters">
+      <div class="invest-tab active" onclick="filterGoals('all',this)">Tất cả</div>
+      <div class="invest-tab" onclick="filterGoals('Năm 2025',this)">Năm</div>
+      <div class="invest-tab" onclick="filterGoals('month',this)">Theo tháng</div>
+    </div>
+    <div id="goals-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</section>
+
+<!-- ===== BOOKS ===== -->
+<section id="books" class="section">
+  <div class="page-header">
+    <h2>Sách đã đọc</h2>
+    <p>Thư viện cá nhân — ghi chú và suy ngẫm từng quyển</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Thêm sách mới</div>
+      <div class="form-group"><label>Tên sách</label><input id="book-title" placeholder="VD: Đắc Nhân Tâm"></div>
+      <div class="form-group"><label>Tác giả</label><input id="book-author" placeholder="VD: Dale Carnegie"></div>
+      <div class="form-group"><label>Thể loại</label>
+        <select id="book-genre"><option>Self-help</option><option>Tài chính</option><option>Kinh doanh</option><option>Tâm lý học</option><option>Lịch sử</option><option>Tiểu thuyết</option><option>Kỹ năng</option><option>Khác</option></select>
+      </div>
+      <div class="form-group"><label>Đánh giá</label>
+        <select id="book-rating"><option value="5">⭐⭐⭐⭐⭐ Tuyệt vời</option><option value="4">⭐⭐⭐⭐ Rất hay</option><option value="3">⭐⭐⭐ Ổn</option><option value="2">⭐⭐ Tạm được</option><option value="1">⭐ Không ấn tượng</option></select>
+      </div>
+      <div class="form-group"><label>Trạng thái</label>
+        <select id="book-status"><option>✅ Đã đọc xong</option><option>📖 Đang đọc</option><option>📋 Muốn đọc</option></select>
+      </div>
+      <div class="form-group"><label>Ngày hoàn thành</label><input type="date" id="book-date"></div>
+      <div class="form-group"><label>Ghi chú & Key Takeaways</label><textarea id="book-notes" rows="4" placeholder="Điều gì đọng lại, bài học, câu trích dẫn yêu thích..."></textarea></div>
+      <button class="btn" onclick="addBook()">+ Thêm sách</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Thống kê đọc sách</div>
+      <div id="book-stats" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Thư viện sách</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;" id="book-filter-bar">
+      <div class="invest-tab active" onclick="filterBooks('all',this)">Tất cả</div>
+      <div class="invest-tab" onclick="filterBooks('Đang đọc',this)">📖 Đang đọc</div>
+      <div class="invest-tab" onclick="filterBooks('Đã đọc xong',this)">✅ Đã đọc</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;" id="books-grid"></div>
+  </div>
+</section>
+
+<!-- ===== WORKOUT ===== -->
+<section id="workout" class="section">
+  <div class="page-header">
+    <h2>Lịch tập luyện</h2>
+    <p>Theo dõi Cầu lông · Gym · Đi bộ — tracking theo ngày & tháng</p>
+  </div>
+  <div class="grid-4 mb12">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Gym tháng này</div>
+      <div class="stat-value" id="wk-gym">0</div><div class="stat-sub">buổi</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Cầu lông</div>
+      <div class="stat-value" id="wk-bad">0</div><div class="stat-sub">buổi</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--green)"></span>Đi bộ</div>
+      <div class="stat-value" id="wk-walk">0</div><div class="stat-sub">buổi</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Tổng buổi</div>
+      <div class="stat-value" id="wk-total">0</div><div class="stat-sub">tháng này</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Ghi nhận buổi tập</div>
+      <div class="form-group"><label>Ngày tập</label><input type="date" id="wk-date"></div>
+      <div class="form-group"><label>Loại tập</label>
+        <select id="wk-type">
+          <option value="gym">🏋️ Gym</option>
+          <option value="badminton">🏸 Cầu lông</option>
+          <option value="walk">🚶 Đi bộ</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Thời lượng (phút)</label><input type="number" id="wk-duration" placeholder="VD: 60"></div>
+      <div class="form-group"><label>Ghi chú</label><input id="wk-note" placeholder="VD: Tập ngực + tay sau..."></div>
+      <button class="btn" onclick="addWorkout()">+ Ghi nhận</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal)"></span>Lịch tháng</div>
+      <div class="cal-controls">
+        <button class="cal-btn" onclick="changeWkMonth(-1)">‹</button>
+        <span id="wk-month-label"></span>
+        <button class="cal-btn" onclick="changeWkMonth(1)">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-header">CN</div><div class="cal-day-header">T2</div><div class="cal-day-header">T3</div>
+        <div class="cal-day-header">T4</div><div class="cal-day-header">T5</div><div class="cal-day-header">T6</div><div class="cal-day-header">T7</div>
+      </div>
+      <div class="cal-grid" id="wk-cal"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-dot" style="background:var(--violet)"></div>Gym</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:var(--teal)"></div>Cầu lông</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:var(--green)"></div>Đi bộ</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:linear-gradient(135deg,var(--violet),var(--teal))"></div>Nhiều loại</div>
+      </div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--rose)"></span>Lịch sử tập luyện gần đây</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Ngày</th><th>Loại</th><th>Thời lượng</th><th>Ghi chú</th><th></th></tr></thead>
+      <tbody id="wk-history"></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SKINCARE ===== -->
+<section id="skincare" class="section">
+  <div class="page-header">
+    <h2>Skincare Routine</h2>
+    <p>Theo dõi lịch chăm sóc da — tránh dùng trùng sản phẩm</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--rose)"></span>Ghi nhận hôm nay</div>
+      <div class="form-group"><label>Ngày</label><input type="date" id="sk-date"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="sk-checkboxes">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-morning-clean" style="width:auto"> <span>🌤 Rửa mặt buổi sáng</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-night-clean" style="width:auto"> <span>🌙 Rửa mặt buổi tối</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-sunscreen" style="width:auto"> <span>☀️ Chống nắng SPF</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-moisturizer" style="width:auto"> <span>💧 Dưỡng ẩm</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-bha" style="width:auto"> <span>🧴 BHA (tối đa 2-3x/tuần)</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-mask" style="width:auto"> <span>🎭 Đắp mặt nạ (1-2x/tuần)</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-exfo" style="width:auto"> <span>💎 Tẩy tế bào chết (1x/tuần)</span></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;"><input type="checkbox" id="sk-serum" style="width:auto"> <span>⚗️ Serum (Vitamin C / Niacinamide)</span></label>
+      </div>
+      <div class="form-group mt12"><label>Ghi chú da hôm nay</label><textarea id="sk-note" rows="2" placeholder="Da khô, nổi mụn, hay da khoẻ?..."></textarea></div>
+      <button class="btn" onclick="saveSkincare()">💾 Lưu hôm nay</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--gold)"></span>Quy tắc quan trọng</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:var(--text2);line-height:1.6;">
+        <div style="background:rgba(232,111,138,.1);border:1px solid rgba(232,111,138,.2);border-radius:8px;padding:10px;">
+          <strong style="color:var(--rose)">⚠️ KHÔNG dùng cùng ngày:</strong><br>BHA + Tẩy tế bào chết (Exfoliator). Dùng xen kẽ các ngày khác nhau.
+        </div>
+        <div style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px;">
+          <strong style="color:var(--gold2)">📅 Tần suất khuyến nghị:</strong><br>
+          • BHA: 2-3 lần/tuần (tối)<br>
+          • Tẩy tế bào chết: 1 lần/tuần<br>
+          • Mặt nạ: 1-2 lần/tuần<br>
+          • Serum Vit C: buổi sáng
+        </div>
+        <div style="background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.2);border-radius:8px;padding:10px;">
+          <strong style="color:var(--teal)">💡 Lưu ý kết hợp:</strong><br>
+          • Không kết hợp BHA với Retinol cùng đêm<br>
+          • Vitamin C dùng ban ngày + chống nắng<br>
+          • Niacinamide có thể dùng linh hoạt
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Lịch skincare tháng này</div>
+    <div class="cal-controls">
+      <button class="cal-btn" onclick="changeSkMonth(-1)">‹</button>
+      <span id="sk-month-label"></span>
+      <button class="cal-btn" onclick="changeSkMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" style="margin-top:8px;">
+      <div class="cal-day-header">CN</div><div class="cal-day-header">T2</div><div class="cal-day-header">T3</div>
+      <div class="cal-day-header">T4</div><div class="cal-day-header">T5</div><div class="cal-day-header">T6</div><div class="cal-day-header">T7</div>
+    </div>
+    <div class="skincare-grid" id="sk-cal"></div>
+    <div class="cal-legend" style="margin-top:14px;">
+      <div class="cal-legend-item"><div class="cal-dot" style="background:var(--rose)"></div>Mặt nạ</div>
+      <div class="cal-legend-item"><div class="cal-dot" style="background:var(--gold)"></div>Tẩy TB chết</div>
+      <div class="cal-legend-item"><div class="cal-dot" style="background:var(--violet)"></div>BHA</div>
+      <div class="cal-legend-item"><div class="cal-dot" style="background:var(--teal)"></div>Routine đầy đủ</div>
+    </div>
+  </div>
+  <div class="card spacer">
+    <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Lịch sử 7 ngày gần nhất</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Ngày</th><th>Buổi sáng</th><th>BHA</th><th>Mặt nạ</th><th>Tẩy TB</th><th>Serum</th><th>Ghi chú</th></tr></thead>
+      <tbody id="sk-history"></tbody></table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ===================== STATE =====================
+let state = {
+  income: [],
+  funds: [],
+  savings: [],
+  insurances: [],
+  goals: [],
+  books: [],
+  workouts: [],
+  skincare: [],
+};
+const S = () => { try { localStorage.setItem('ldb_v1', JSON.stringify(state)); } catch(e){} };
+const L = () => { try { const d = localStorage.getItem('ldb_v1'); if(d) state = JSON.parse(d); } catch(e){} };
+L();
+
+// ===================== NAV =====================
+function go(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach(i => { if(i.getAttribute('onclick')?.includes(id)) i.classList.add('active'); });
+  if(id==='overview') renderOverview();
+  if(id==='income') renderIncome();
+  if(id==='investment') renderInvestment();
+  if(id==='workout') renderWorkout();
+  if(id==='skincare') renderSkincare();
+  if(id==='books') renderBooks();
+  if(id==='goals') renderGoals();
+}
+
+// ===================== DATE =====================
+const today = new Date();
+document.getElementById('today-date').textContent = today.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+document.getElementById('income-month').value = today.toISOString().slice(0,7);
+document.getElementById('wk-date').value = today.toISOString().slice(0,10);
+document.getElementById('sk-date').value = today.toISOString().slice(0,10);
+document.getElementById('book-date').value = today.toISOString().slice(0,10);
+document.getElementById('fund-date').value = today.toISOString().slice(0,10);
+document.getElementById('sav-date').value = today.toISOString().slice(0,10);
+document.getElementById('ins-start').value = today.toISOString().slice(0,10);
+
+// ===================== UTILS =====================
+const fmt = v => new Intl.NumberFormat('vi-VN').format(Math.round(v)) + ' đ';
+const fmtM = v => { if(v>=1e9) return (v/1e9).toFixed(2)+'B'; if(v>=1e6) return (v/1e6).toFixed(1)+'M'; return new Intl.NumberFormat('vi-VN').format(v); };
+function id(x){return document.getElementById(x);}
+function delRow(arr, i){ arr.splice(i,1); S(); }
+
+// ===================== OVERVIEW =====================
+function renderOverview(){
+  // Income
+  const thisMonth = today.toISOString().slice(0,7);
+  const mi = state.income.find(x=>x.month===thisMonth);
+  const totalIncome = mi ? (mi.salary||0)+(mi.referral||0)+(mi.other||0) : 0;
+  id('ov-income').textContent = totalIncome ? fmtM(totalIncome) : '—';
+
+  // Assets
+  let totalAsset = 0;
+  state.funds.forEach(f=>totalAsset+=f.nav*f.units);
+  state.savings.forEach(s=>totalAsset+=s.amount);
+  state.insurances.forEach(i=>totalAsset+=i.premium*(new Date().getFullYear()-new Date(i.start).getFullYear()+1));
+  id('ov-asset').textContent = totalAsset ? fmtM(totalAsset) : '—';
+
+  // Workout
+  const wkM = state.workouts.filter(w=>w.date.startsWith(thisMonth));
+  id('ov-workout').textContent = wkM.length;
+  id('ov-books').textContent = state.books.filter(b=>b.status?.includes('xong')).length;
+
+  // Goals overview
+  const gl = id('ov-goals-list'); gl.innerHTML='';
+  state.goals.slice(0,4).forEach(g=>{
+    const p = g.progress||0;
+    gl.innerHTML += `<div class="prog-wrap"><div class="prog-label"><span>${g.title}</span><span>${p}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${p}%;background:${p>=100?'var(--green)':p>=50?'var(--gold)':'var(--violet)'}"></div></div></div>`;
+  });
+  if(!state.goals.length) gl.innerHTML='<div style="color:var(--text3);font-size:13px;">Chưa có mục tiêu — thêm ở tab Mục tiêu năm.</div>';
+
+  // Donut
+  const dvals = [
+    {label:'Chứng chỉ quỹ',v:state.funds.reduce((a,f)=>a+f.nav*f.units,0),c:'var(--gold)'},
+    {label:'Tiết kiệm',v:state.savings.reduce((a,s)=>a+s.amount,0),c:'var(--teal)'},
+    {label:'Bảo hiểm',v:state.insurances.reduce((a,i)=>a+(i.premium*(new Date().getFullYear()-new Date(i.start||today).getFullYear()+1)),0),c:'var(--violet)'},
+  ];
+  renderDonut(dvals);
+
+  // Streak
+  const sorted = [...state.workouts].sort((a,b)=>b.date.localeCompare(a.date));
+  let streak=0,d=new Date();
+  for(let i=0;i<60;i++){
+    const ds=d.toISOString().slice(0,10);
+    if(sorted.find(w=>w.date===ds)){streak++;} else if(streak>0) break;
+    d.setDate(d.getDate()-1);
+  }
+  id('ov-streak').textContent=streak;
+
+  // Skincare today
+  const skt = state.skincare.find(s=>s.date===today.toISOString().slice(0,10));
+  const skEl = id('ov-skincare');
+  if(skt){
+    let txt='';
+    if(skt.morningClean) txt+='☀️ Rửa mặt sáng ';
+    if(skt.bha) txt+='🧴 BHA ';
+    if(skt.mask) txt+='🎭 Mặt nạ ';
+    if(skt.exfo) txt+='💎 Tẩy TB ';
+    if(skt.serum) txt+='⚗️ Serum ';
+    skEl.innerHTML = txt || 'Chưa ghi nhận hôm nay';
+  } else { skEl.innerHTML='Chưa ghi nhận hôm nay'; }
+
+  // Currently reading
+  const reading = state.books.filter(b=>b.status?.includes('Đang'));
+  id('ov-reading').innerHTML = reading.length ? reading.map(b=>`<div style="font-weight:500">${b.title}</div><div style="font-size:11px;color:var(--text3)">— ${b.author}</div>`).join('') : '<span style="color:var(--text3)">Chưa có sách đang đọc</span>';
+}
+
+function renderDonut(dvals){
+  const svg = id('donut-svg');
+  const lg = id('donut-legend');
+  const total = dvals.reduce((a,x)=>a+x.v,0);
+  if(!total){ svg.innerHTML='<text x="55" y="60" fill="var(--text3)" font-size="10" text-anchor="middle">Chưa có dữ liệu</text>'; lg.innerHTML=''; return; }
+  const cx=55,cy=55,r=38,ir=24; let start=-Math.PI/2;
+  let paths=''; let lgHtml='';
+  dvals.forEach(d=>{
+    if(!d.v) return;
+    const angle=(d.v/total)*2*Math.PI;
+    const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
+    const x2=cx+r*Math.cos(start+angle),y2=cy+r*Math.sin(start+angle);
+    const ix1=cx+ir*Math.cos(start),iy1=cy+ir*Math.sin(start);
+    const ix2=cx+ir*Math.cos(start+angle),iy2=cy+ir*Math.sin(start+angle);
+    const lg2=angle>Math.PI?1:0;
+    paths+=`<path d="M${ix1},${iy1} L${x1},${y1} A${r},${r} 0 ${lg2},1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${lg2},0 ${ix1},${iy1}" fill="${d.c}" opacity="0.85"/>`;
+    lgHtml+=`<div class="legend-item"><div class="legend-dot" style="background:${d.c}"></div><div><div>${d.label}</div><div style="font-size:11px;font-family:'JetBrains Mono'">${fmtM(d.v)}</div></div></div>`;
+    start+=angle;
+  });
+  svg.innerHTML=paths+`<text x="55" y="57" fill="var(--text2)" font-size="9" text-anchor="middle" font-family="DM Sans">Tổng</text><text x="55" y="68" fill="var(--gold2)" font-size="9" text-anchor="middle" font-family="JetBrains Mono">${fmtM(total)}</text>`;
+  lg.className='donut-legend'; lg.innerHTML=lgHtml;
+  id('ov-donut-wrap').innerHTML=''; id('ov-donut-wrap').appendChild(svg); id('ov-donut-wrap').appendChild(lg);
+}
+
+// ===================== INCOME =====================
+function saveIncome(){
+  const month=id('income-month').value;
+  const salary=+id('salary-input').value||0;
+  const referral=+id('referral-input').value||0;
+  const other=+id('other-income-input').value||0;
+  const idx=state.income.findIndex(x=>x.month===month);
+  if(idx>=0) state.income[idx]={month,salary,referral,other};
+  else state.income.push({month,salary,referral,other});
+  state.income.sort((a,b)=>b.month.localeCompare(a.month));
+  S(); renderIncome();
+}
+function renderIncome(){
+  const thisMonth=today.toISOString().slice(0,7);
+  const mi=state.income.find(x=>x.month===thisMonth)||{salary:0,referral:0,other:0};
+  id('display-salary').textContent=mi.salary?fmt(mi.salary):'—';
+  id('display-referral').textContent=mi.referral?fmt(mi.referral):'—';
+  id('display-other').textContent=mi.other?fmt(mi.other):'—';
+  const total=(mi.salary||0)+(mi.referral||0)+(mi.other||0);
+  id('display-total').textContent=total?fmt(total):'—';
+  // History table
+  const tb=id('income-history'); tb.innerHTML='';
+  state.income.forEach(x=>{
+    const t=(x.salary||0)+(x.referral||0)+(x.other||0);
+    tb.innerHTML+=`<tr><td><span class="tag" style="background:rgba(201,168,76,.1);color:var(--gold2)">${x.month}</span></td><td>${x.salary?fmt(x.salary):'—'}</td><td style="color:var(--teal)">${x.referral?fmt(x.referral):'—'}</td><td>${x.other?fmt(x.other):'—'}</td><td style="color:var(--green);font-weight:600">${fmt(t)}</td></tr>`;
+  });
+  // Chart
+  const chart=id('income-chart'); chart.innerHTML='';
+  const last6=state.income.slice(0,6).reverse();
+  const maxV=Math.max(...last6.map(x=>(x.salary||0)+(x.referral||0)+(x.other||0)),1);
+  last6.forEach(x=>{
+    const t=(x.salary||0)+(x.referral||0)+(x.other||0);
+    const h=Math.round((t/maxV)*88)+4;
+    chart.innerHTML+=`<div class="bar-col"><div class="bar-val">${fmtM(t)}</div><div class="bar" style="height:${h}px;background:linear-gradient(180deg,var(--gold2),var(--gold))"></div><div class="bar-label">${x.month.slice(5)}</div></div>`;
+  });
+}
+
+// ===================== INVESTMENT =====================
+function switchInvest(tab,el){
+  ['fund','saving','insurance'].forEach(t=>{ id('invest-'+t).style.display='none'; });
+  id('invest-'+tab).style.display='block';
+  document.querySelectorAll('.invest-type .invest-tab').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+}
+function addFund(){
+  const name=id('fund-name').value.trim();
+  if(!name) return;
+  state.funds.push({name,nav:+id('fund-nav').value||0,units:+id('fund-units').value||0,cost:+id('fund-cost').value||0,date:id('fund-date').value});
+  S(); renderInvestment(); id('fund-name').value=''; id('fund-nav').value=''; id('fund-units').value=''; id('fund-cost').value='';
+}
+function addSaving(){
+  const bank=id('sav-bank').value.trim(); if(!bank) return;
+  state.savings.push({bank,amount:+id('sav-amount').value||0,rate:+id('sav-rate').value||0,term:+id('sav-term').value||0,date:id('sav-date').value});
+  S(); renderInvestment(); id('sav-bank').value=''; id('sav-amount').value=''; id('sav-rate').value=''; id('sav-term').value='';
+}
+function addInsurance(){
+  const company=id('ins-company').value.trim(); if(!company) return;
+  state.insurances.push({company,type:id('ins-type').value,premium:+id('ins-premium').value||0,value:+id('ins-value').value||0,start:id('ins-start').value,years:+id('ins-years').value||20});
+  S(); renderInvestment(); id('ins-company').value=''; id('ins-premium').value=''; id('ins-value').value='';
+}
+function renderInvestment(){
+  // Funds
+  const ft=id('fund-table'); ft.innerHTML='';
+  let totalFund=0,totalCost=0;
+  state.funds.forEach((f,i)=>{
+    const val=f.nav*f.units; const cost=f.cost*f.units; const pl=val-cost; const pct=cost?((pl/cost)*100):0;
+    totalFund+=val; totalCost+=cost;
+    ft.innerHTML+=`<tr><td><strong>${f.name}</strong></td><td>${f.units.toLocaleString()}</td><td style="color:var(--gold2)">${fmt(f.nav)}</td><td>${fmt(f.cost)}</td><td style="color:var(--teal)">${fmt(val)}</td><td style="color:${pl>=0?'var(--green)':'var(--rose)'}">${pl>=0?'+':''}${fmt(pl)}</td><td style="color:${pl>=0?'var(--green)':'var(--rose)'}">${pct.toFixed(1)}%</td><td><button class="btn btn-sm btn-ghost" onclick="state.funds.splice(${i},1);S();renderInvestment()">×</button></td></tr>`;
+  });
+  id('fund-summary').innerHTML=state.funds.length?`<div><div style="font-size:12px;color:var(--text3)">Tổng giá trị</div><div class="number-big" style="color:var(--gold2)">${fmt(totalFund)}</div></div><div><div style="font-size:12px;color:var(--text3)">Tổng giá vốn</div><div class="number-big">${fmt(totalCost)}</div></div><div><div style="font-size:12px;color:var(--text3)">Lãi/Lỗ tổng</div><div class="number-big" style="color:${totalFund-totalCost>=0?'var(--green)':'var(--rose)'}">${totalFund-totalCost>=0?'+':''}${fmt(totalFund-totalCost)}</div></div>`:'<div style="color:var(--text3);font-size:13px;">Chưa có dữ liệu</div>';
+  // Savings
+  const st2=id('sav-table'); st2.innerHTML='';
+  let totalSav=0;
+  state.savings.forEach((s,i)=>{
+    const maturity=new Date(s.date); maturity.setMonth(maturity.getMonth()+s.term);
+    const interest=s.amount*(s.rate/100)*(s.term/12);
+    totalSav+=s.amount;
+    st2.innerHTML+=`<tr><td><strong>${s.bank}</strong></td><td style="color:var(--gold2)">${fmt(s.amount)}</td><td>${s.rate}%</td><td>${s.term} tháng</td><td>${maturity.toLocaleDateString('vi-VN')}</td><td style="color:var(--green)">+${fmt(interest)}</td><td><button class="btn btn-sm btn-ghost" onclick="state.savings.splice(${i},1);S();renderInvestment()">×</button></td></tr>`;
+  });
+  id('sav-summary').innerHTML=state.savings.length?`<div><div style="font-size:12px;color:var(--text3)">Tổng gốc</div><div class="number-big" style="color:var(--teal)">${fmt(totalSav)}</div></div>`:'<div style="color:var(--text3);font-size:13px;">Chưa có dữ liệu</div>';
+  // Insurance
+  const it=id('ins-table'); it.innerHTML='';
+  let totalIns=0;
+  state.insurances.forEach((ins,i)=>{
+    const endDate=new Date(ins.start); endDate.setFullYear(endDate.getFullYear()+ins.years);
+    const remaining=Math.max(0,Math.ceil((endDate-new Date())/(1000*60*60*24*365)));
+    totalIns+=ins.premium;
+    it.innerHTML+=`<tr><td><strong>${ins.company}</strong></td><td><span class="tag" style="background:rgba(139,127,245,.15);color:var(--violet)">${ins.type}</span></td><td>${fmt(ins.premium)}</td><td style="color:var(--teal)">${fmt(ins.value)}</td><td>${endDate.toLocaleDateString('vi-VN')}</td><td>${remaining} năm</td><td><button class="btn btn-sm btn-ghost" onclick="state.insurances.splice(${i},1);S();renderInvestment()">×</button></td></tr>`;
+  });
+  id('ins-summary').innerHTML=state.insurances.length?`<div><div style="font-size:12px;color:var(--text3)">Phí/năm tổng</div><div class="number-big" style="color:var(--rose)">${fmt(totalIns)}</div></div>`:'<div style="color:var(--text3);font-size:13px;">Chưa có dữ liệu</div>';
+}
+
+// ===================== FORECAST =====================
+function runForecast(){
+  const P=+id('fc-current').value||0, M=+id('fc-monthly').value||0, target=+id('fc-target').value||0, years=+id('fc-years').value||10;
+  const calc=(r)=>{ let v=P; for(let y=1;y<=years;y++){ v=v*(1+r)+M*12; } return v; };
+  const rates=[0.07,0.12,0.18];
+  const names=['An toàn (7%)','Cân bằng (12%)','Tăng trưởng (18%)'];
+  const ids=['fc-s1','fc-s2','fc-s3'];
+  const colors=['var(--text2)','var(--gold2)','var(--teal)'];
+  rates.forEach((r,i)=>{
+    const v=calc(r);
+    const progress=target?Math.min(100,(v/target*100)):0;
+    id(ids[i]).innerHTML=`<div style="color:${colors[i]};font-size:16px;font-family:'JetBrains Mono'">${fmt(v)}</div><div style="font-size:11px;color:var(--text3);margin-top:4px">sau ${years} năm${target?` · ${progress.toFixed(0)}% mục tiêu`:''}</div>`;
+  });
+  // Result text
+  const best=calc(0.12);
+  id('fc-result').innerHTML=`<div><span style="color:var(--text3)">Tài sản ban đầu:</span> <strong style="color:var(--gold2)">${fmt(P)}</strong></div><div><span style="color:var(--text3)">Tiết kiệm mỗi tháng:</span> <strong style="color:var(--teal)">${fmt(M)}</strong></div><div><span style="color:var(--text3)">Thời gian:</span> <strong>${years} năm</strong></div>${target?`<div style="margin-top:8px;padding:8px;background:rgba(86,209,138,.1);border-radius:8px;border:1px solid rgba(86,209,138,.2)"><span style="color:var(--text3)">Mục tiêu ${fmt(target)} — phương án cân bằng đạt <strong style="color:var(--green)">${((best/target)*100).toFixed(0)}%</strong></div>`:''}`;
+  // Chart
+  const chart=id('fc-chart'); chart.innerHTML='';
+  const allVals=[];
+  for(let y=1;y<=Math.min(years,10);y++) allVals.push(calc(0.12));
+  const yearData=[];
+  let v7=P,v12=P,v18=P;
+  for(let y=1;y<=Math.min(years,10);y++){
+    v7=v7*(1.07)+M*12; v12=v12*(1.12)+M*12; v18=v18*(1.18)+M*12;
+    yearData.push({y,v7,v12,v18});
+  }
+  const maxV2=Math.max(...yearData.map(d=>d.v18),1);
+  yearData.forEach(d=>{
+    const h7=Math.round((d.v7/maxV2)*128)+4;
+    const h12=Math.round((d.v12/maxV2)*128)+4;
+    const h18=Math.round((d.v18/maxV2)*128)+4;
+    chart.innerHTML+=`<div class="bar-col"><div class="bar-val" style="font-size:9px">${fmtM(d.v12)}</div><div style="display:flex;gap:2px;align-items:flex-end"><div class="bar" style="height:${h7}px;width:8px;background:var(--text3)"></div><div class="bar" style="height:${h12}px;width:8px;background:var(--gold)"></div><div class="bar" style="height:${h18}px;width:8px;background:var(--teal)"></div></div><div class="bar-label">Y${d.y}</div></div>`;
+  });
+}
+
+// ===================== GOALS =====================
+let goalFilter='all';
+function addGoal(){
+  const title=id('goal-title').value.trim(); if(!title) return;
+  state.goals.push({title,scope:id('goal-scope').value,cat:id('goal-cat').value,progress:+id('goal-progress').value||0,note:id('goal-note').value,id:Date.now()});
+  S(); renderGoals(); id('goal-title').value=''; id('goal-note').value=''; id('goal-progress').value='0';
+}
+function filterGoals(f,el){
+  goalFilter=f; document.querySelectorAll('#goal-filters .invest-tab').forEach(e=>e.classList.remove('active')); el.classList.add('active'); renderGoalsList();
+}
+function renderGoals(){ renderGoalsList(); renderGoalsStats(); }
+function renderGoalsList(){
+  const gl=id('goals-list'); gl.innerHTML='';
+  let filtered=state.goals;
+  if(goalFilter==='Năm 2025') filtered=filtered.filter(g=>g.scope==='Năm 2025');
+  else if(goalFilter==='month') filtered=filtered.filter(g=>g.scope!=='Năm 2025');
+  filtered.forEach((g,i)=>{
+    const done=g.progress>=100;
+    gl.innerHTML+=`<div class="goal-item">
+      <div class="goal-check ${done?'done':''}" onclick="toggleGoal(${i})">${done?'✓':''}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:13.5px;font-weight:500;${done?'text-decoration:line-through;color:var(--text3)':''}">${g.title}</span>
+          <span class="pill" style="background:rgba(255,255,255,.06);color:var(--text3);font-size:10px">${g.scope}</span>
+          <span style="font-size:12px">${g.cat}</span>
+        </div>
+        ${g.note?`<div style="font-size:11.5px;color:var(--text3);margin-bottom:6px">${g.note}</div>`:''}
+        <div class="prog-track"><div class="prog-fill" style="width:${g.progress}%;background:${g.progress>=100?'var(--green)':g.progress>=50?'var(--gold)':'var(--violet)'}"></div></div>
+      </div>
+      <div style="text-align:right;min-width:40px">
+        <div style="font-size:12px;color:var(--text2);font-family:'JetBrains Mono'">${g.progress}%</div>
+        <input type="range" min="0" max="100" value="${g.progress}" style="width:60px;margin-top:4px;accent-color:var(--gold)" oninput="state.goals[${i}].progress=+this.value;S();renderGoals()">
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="state.goals.splice(${i},1);S();renderGoals()">×</button>
+    </div>`;
+  });
+  if(!filtered.length) gl.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px 0;">Chưa có mục tiêu nào.</div>';
+}
+function toggleGoal(i){ state.goals[i].progress=state.goals[i].progress>=100?0:100; S(); renderGoals(); }
+function renderGoalsStats(){
+  const total=state.goals.length;
+  const done=state.goals.filter(g=>g.progress>=100).length;
+  const inprog=state.goals.filter(g=>g.progress>0&&g.progress<100).length;
+  id('goals-stats').innerHTML=`
+    <div class="prog-wrap"><div class="prog-label"><span>Hoàn thành</span><span>${done}/${total}</span></div><div class="prog-track"><div class="prog-fill" style="width:${total?done/total*100:0}%;background:var(--green)"></div></div></div>
+    <div style="display:flex;gap:14px;font-size:13px;">
+      <div><div style="color:var(--text3);font-size:11px">Đang làm</div><div style="color:var(--gold2);font-weight:600">${inprog}</div></div>
+      <div><div style="color:var(--text3);font-size:11px">Chưa bắt đầu</div><div style="color:var(--text2);font-weight:600">${total-done-inprog}</div></div>
+      <div><div style="color:var(--text3);font-size:11px">Hoàn thành</div><div style="color:var(--green);font-weight:600">${done}</div></div>
+    </div>`;
+}
+
+// ===================== BOOKS =====================
+let bookFilter='all';
+function addBook(){
+  const title=id('book-title').value.trim(); if(!title) return;
+  state.books.push({title,author:id('book-author').value,genre:id('book-genre').value,rating:+id('book-rating').value,status:id('book-status').value,date:id('book-date').value,notes:id('book-notes').value});
+  S(); renderBooks(); id('book-title').value=''; id('book-author').value=''; id('book-notes').value='';
+}
+function filterBooks(f,el){ bookFilter=f; document.querySelectorAll('#book-filter-bar .invest-tab').forEach(e=>e.classList.remove('active')); el.classList.add('active'); renderBookGrid(); }
+function renderBooks(){ renderBookGrid(); renderBookStats(); }
+function renderBookGrid(){
+  const bg=id('books-grid'); bg.innerHTML='';
+  let list=state.books;
+  if(bookFilter!=='all') list=list.filter(b=>b.status?.includes(bookFilter==='Đang đọc'?'Đang':'xong'));
+  list.forEach((b,i)=>{
+    const stars='⭐'.repeat(b.rating||0);
+    bg.innerHTML+=`<div class="book-card" id="bcard-${i}" onclick="toggleBook(${i})">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px">${b.title}</div>
+          <div style="font-size:12px;color:var(--text3)">${b.author||'—'}</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" style="flex-shrink:0" onclick="event.stopPropagation();state.books.splice(${i},1);S();renderBooks()">×</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+        <span class="tag" style="background:rgba(78,205,196,.1);color:var(--teal)">${b.genre}</span>
+        <span class="tag" style="background:rgba(255,255,255,.05);color:var(--text3);font-size:10px">${b.status}</span>
+        ${b.date?`<span style="font-size:10px;color:var(--text3)">${b.date}</span>`:''}
+      </div>
+      <div style="margin-top:6px;font-size:13px">${stars}</div>
+      <div class="book-notes">
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap">${b.notes||'Chưa có ghi chú.'}</div>
+      </div>
+    </div>`;
+  });
+  if(!list.length) bg.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px 0;">Chưa có sách nào.</div>';
+}
+function toggleBook(i){ const el=document.getElementById('bcard-'+i); el?.classList.toggle('expanded'); }
+function renderBookStats(){
+  const total=state.books.length;
+  const done=state.books.filter(b=>b.status?.includes('xong')).length;
+  const reading=state.books.filter(b=>b.status?.includes('Đang')).length;
+  const avgRating=done?state.books.filter(b=>b.status?.includes('xong')).reduce((a,b)=>a+(b.rating||0),0)/done:0;
+  id('book-stats').innerHTML=`
+    <div style="display:flex;gap:16px">
+      <div><div style="font-size:11px;color:var(--text3)">Đã đọc</div><div style="font-size:24px;font-family:'Playfair Display',serif;color:var(--gold2)">${done}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">Đang đọc</div><div style="font-size:24px;font-family:'Playfair Display',serif;color:var(--teal)">${reading}</div></div>
+      <div><div style="font-size:11px;color:var(--text3)">Rating TB</div><div style="font-size:24px;font-family:'Playfair Display',serif;color:var(--violet)">${avgRating.toFixed(1)}</div></div>
+    </div>
+    ${done?`<div class="prog-wrap"><div class="prog-label"><span>Tiến độ năm (mục tiêu 20 quyển)</span><span>${done}/20</span></div><div class="prog-track"><div class="prog-fill" style="width:${Math.min(done/20*100,100)}%;background:var(--gold)"></div></div></div>`:''}`;
+}
+
+// ===================== WORKOUT =====================
+let wkMonth=new Date();
+function addWorkout(){
+  const date=id('wk-date').value; if(!date) return;
+  state.workouts.push({date,type:id('wk-type').value,duration:+id('wk-duration').value||0,note:id('wk-note').value});
+  state.workouts.sort((a,b)=>b.date.localeCompare(a.date));
+  S(); renderWorkout(); id('wk-note').value=''; id('wk-duration').value='';
+}
+function changeWkMonth(d){ wkMonth=new Date(wkMonth.getFullYear(),wkMonth.getMonth()+d,1); renderWkCal(); }
+function renderWorkout(){
+  const thisMonth=today.toISOString().slice(0,7);
+  const wkM=state.workouts.filter(w=>w.date.startsWith(thisMonth));
+  id('wk-gym').textContent=wkM.filter(w=>w.type==='gym').length;
+  id('wk-bad').textContent=wkM.filter(w=>w.type==='badminton').length;
+  id('wk-walk').textContent=wkM.filter(w=>w.type==='walk').length;
+  id('wk-total').textContent=wkM.length;
+  renderWkCal();
+  const hist=id('wk-history'); hist.innerHTML='';
+  state.workouts.slice(0,20).forEach((w,i)=>{
+    const labels={gym:'🏋️ Gym',badminton:'🏸 Cầu lông',walk:'🚶 Đi bộ'};
+    hist.innerHTML+=`<tr><td>${w.date}</td><td><span class="tag" style="background:rgba(255,255,255,.06)">${labels[w.type]||w.type}</span></td><td>${w.duration?w.duration+' phút':'—'}</td><td style="color:var(--text3)">${w.note||'—'}</td><td><button class="btn btn-sm btn-ghost" onclick="state.workouts.splice(${i},1);S();renderWorkout()">×</button></td></tr>`;
+  });
+}
+function renderWkCal(){
+  const y=wkMonth.getFullYear(),m=wkMonth.getMonth();
+  id('wk-month-label').textContent=`Tháng ${m+1}/${y}`;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const cal=id('wk-cal'); cal.innerHTML='';
+  const prefix=firstDay;
+  for(let i=0;i<prefix;i++) cal.innerHTML+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayW=state.workouts.filter(w=>w.date===ds);
+    const isToday=ds===today.toISOString().slice(0,10);
+    const hasGym=dayW.some(w=>w.type==='gym');
+    const hasBad=dayW.some(w=>w.type==='badminton');
+    const hasWalk=dayW.some(w=>w.type==='walk');
+    const multi=(hasGym?1:0)+(hasBad?1:0)+(hasWalk?1:0)>1;
+    let cls='cal-day';
+    if(isToday) cls+=' today';
+    if(multi) cls+=' has-multi';
+    else if(hasGym) cls+=' has-gym';
+    else if(hasBad) cls+=' has-badminton';
+    else if(hasWalk) cls+=' has-walk';
+    cal.innerHTML+=`<div class="${cls}" title="${dayW.map(w=>w.type).join(',')}" onclick="quickLogWorkout('${ds}')">${d}</div>`;
+  }
+}
+function quickLogWorkout(ds){
+  id('wk-date').value=ds;
+}
+
+// ===================== SKINCARE =====================
+let skMonth=new Date();
+function saveSkincare(){
+  const date=id('sk-date').value; if(!date) return;
+  const entry={date,morningClean:id('sk-morning-clean').checked,nightClean:id('sk-night-clean').checked,sunscreen:id('sk-sunscreen').checked,moisturizer:id('sk-moisturizer').checked,bha:id('sk-bha').checked,mask:id('sk-mask').checked,exfo:id('sk-exfo').checked,serum:id('sk-serum').checked,note:id('sk-note').value};
+  const idx=state.skincare.findIndex(s=>s.date===date);
+  if(idx>=0) state.skincare[idx]=entry; else state.skincare.push(entry);
+  state.skincare.sort((a,b)=>b.date.localeCompare(a.date));
+  S(); renderSkincare();
+  // Uncheck all
+  ['morning-clean','night-clean','sunscreen','moisturizer','bha','mask','exfo','serum'].forEach(k=>{ const el=id('sk-'+k); if(el) el.checked=false; });
+  id('sk-note').value='';
+}
+function changeSkMonth(d){ skMonth=new Date(skMonth.getFullYear(),skMonth.getMonth()+d,1); renderSkCal(); }
+function renderSkincare(){ renderSkCal(); renderSkHistory(); }
+function renderSkCal(){
+  const y=skMonth.getFullYear(),m=skMonth.getMonth();
+  id('sk-month-label').textContent=`Tháng ${m+1}/${y}`;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const cal=id('sk-cal'); cal.innerHTML='';
+  for(let i=0;i<firstDay;i++) cal.innerHTML+=`<div class="sk-slot" style="border-color:transparent"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const s=state.skincare.find(x=>x.date===ds);
+    const isToday=ds===today.toISOString().slice(0,10);
+    let dots='';
+    if(s){
+      if(s.mask) dots+=`<span class="sk-dot" style="background:var(--rose)"></span>`;
+      if(s.exfo) dots+=`<span class="sk-dot" style="background:var(--gold)"></span>`;
+      if(s.bha) dots+=`<span class="sk-dot" style="background:var(--violet)"></span>`;
+      if(s.morningClean&&s.nightClean) dots+=`<span class="sk-dot" style="background:var(--teal)"></span>`;
+    }
+    cal.innerHTML+=`<div class="sk-slot" style="${isToday?'border-color:var(--gold);':''}${s?'background:rgba(255,255,255,.04)':''}" onclick="id('sk-date').value='${ds}'"><div class="sk-date">${d}</div><div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1px">${dots}</div></div>`;
+  }
+}
+function renderSkHistory(){
+  const hist=id('sk-history'); hist.innerHTML='';
+  state.skincare.slice(0,7).forEach(s=>{
+    const tick=v=>v?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--border2)">—</span>';
+    hist.innerHTML+=`<tr><td>${s.date}</td><td>${tick(s.morningClean)} AM / ${tick(s.nightClean)} PM</td><td>${tick(s.bha)}</td><td>${tick(s.mask)}</td><td>${tick(s.exfo)}</td><td>${tick(s.serum)}</td><td style="color:var(--text3);font-size:12px">${s.note||'—'}</td></tr>`;
+  });
+}
+
+// ===================== INIT =====================
+renderOverview();
+renderIncome();
+renderInvestment();
+renderWorkout();
+renderSkincare();
+renderBooks();
+renderGoals();
+</script>
+</body>
+</html>
