@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Cá Nhân</title>
+<title>My Life</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<!-- Firebase SDKs (compat v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
   :root {
     --bg: #F5F4F0;
@@ -342,17 +346,273 @@
   .modal-title { font-size:18px;font-weight:700;margin-bottom:20px; }
   .modal-footer { display:flex;gap:8px;justify-content:flex-end;margin-top:20px; }
 
+  .desktop-only { display:block; }
+  .month-switcher { display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:6px; }
+  .month-nav-btn {
+    width:36px;height:36px;border-radius:10px;border:none;background:var(--surface2);
+    color:var(--text-secondary);font-size:18px;font-weight:700;cursor:pointer;
+  }
+  .month-trigger {
+    border:none;background:transparent;display:flex;align-items:center;gap:12px;cursor:pointer;
+    min-width:220px;padding:4px 8px;text-align:left;color:var(--text-primary);font-family:inherit;
+  }
+  .month-trigger-icon {
+    width:38px;height:38px;border-radius:12px;background:var(--accent-light);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  }
+  .month-trigger-label { display:flex;flex-direction:column;gap:2px;min-width:0; }
+  .month-trigger-kicker { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px; }
+  .month-trigger-note { font-size:12px;color:var(--text-muted); }
+  .month-picker-head { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px; }
+  .month-picker-year { font-size:22px;font-weight:800;letter-spacing:-0.5px; }
+  .month-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+  .month-option {
+    border:1.5px solid var(--border);background:var(--surface2);border-radius:14px;padding:14px 10px;
+    text-align:center;font-weight:700;cursor:pointer;transition:all .15s;color:var(--text-secondary);font-family:inherit;
+  }
+  .month-option:hover { border-color:var(--accent); color:var(--accent); }
+  .month-option.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 8px 18px rgba(45,106,79,0.18); }
+  .month-helper { font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:14px; }
+
+  .fund-toolbar-note {
+    padding:12px 14px;margin-bottom:10px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);
+    color:var(--text-secondary);font-size:12.5px;line-height:1.6;
+  }
+  .fund-card { padding:16px 0;border-bottom:1px solid var(--border); }
+  .fund-card:last-child { border-bottom:none; }
+  .fund-card-top { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px; }
+  .fund-card-name { font-size:15px;font-weight:800; }
+  .fund-card-sub { font-size:12px;color:var(--text-muted);margin-top:4px; }
+  .fund-metrics { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
+  .metric-chip { background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px; }
+  .metric-chip-label { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px; }
+  .metric-chip-value { font-size:15px;font-weight:800;color:var(--text-primary);line-height:1.35; }
+  .fund-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:12px; }
+  .action-btn {
+    border:none;border-radius:10px;padding:9px 12px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+    background:var(--surface2);color:var(--text-secondary);border:1px solid var(--border);
+  }
+  .action-btn-primary { background:var(--accent-light); color:var(--accent); border-color:transparent; }
+  .action-btn-danger { background:var(--accent2-light); color:var(--accent2); border-color:transparent; }
+
+
   /* ── RESPONSIVE ── */
   @media(max-width:900px) {
     .grid-4 { grid-template-columns:1fr 1fr; }
     .grid-3 { grid-template-columns:1fr 1fr; }
   }
+
+  /* ── MOBILE (iPhone & Android) ── */
   @media(max-width:640px) {
+    /* Hide desktop sidebar */
     .sidebar { display:none; }
-    .main { margin-left:0; padding:16px; }
-    .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+
+    /* Main fills screen, padded for bottom nav */
+    .main {
+      margin-left:0;
+      padding:12px 12px 90px;
+      max-width:100%;
+    }
+
+    /* Stack all grids */
+    .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; gap:12px; }
     .col-span-2,.col-span-3 { grid-column:span 1; }
+
+    /* Tighter cards */
+    .card { padding:14px; }
+    .page-header h1 { font-size:22px; }
+    .kpi-value { font-size:20px; }
+
+    /* Page header stacks on mobile */
+    .page-header { flex-direction:column !important; align-items:flex-start !important; gap:10px !important; }
+    .page-header > div:last-child { width:100%; }
+    /* Month nav full width */
+    #fin-month-label { min-width:0 !important; flex:1; }
+    .month-switcher { width:100%; }
+    .month-trigger { min-width:0; flex:1; padding:6px; }
+    .month-trigger-note { display:none; }
+    .month-grid { grid-template-columns:repeat(2,1fr); }
+
+    /* Investment table columns collapse */
+    .inv-header, .inv-row { grid-template-columns:1.8fr 1fr 1fr !important; }
+    .inv-header span:last-child, .inv-row > *:last-child { display:none; }
+    .saving-row { grid-template-columns:1.5fr 1fr auto !important; }
+    .fund-metrics { grid-template-columns:1fr; }
+    .fund-card-top { flex-direction:column; }
+    .fund-actions { flex-direction:column; }
+    .action-btn { width:100%; }
+
+    /* Annual table mobile */
+    #annual-table .inv-row { grid-template-columns:1.4fr .9fr 1fr !important; }
+    #annual-table .inv-row > *:nth-child(4) { display:none; }
+    .desktop-only { display:none !important; }
+
+    /* Tabs wrap */
+    .tabs { flex-wrap:wrap; gap:4px; }
+    .tab { font-size:12px; padding:6px 10px; }
+
+    /* Form rows stack */
+    .form-row { flex-direction:column; }
+    .form-group { min-width:0; }
+
+    /* Monthly bar chart shorter */
+    #monthly-bar-chart { height:80px !important; }
+
+    /* Hide some KPI on mobile — show 2x2 grid */
+    .grid-4 { grid-template-columns:1fr 1fr !important; }
+
+    /* Simpler modal */
+    .modal { padding:20px 16px; border-radius:16px 16px 0 0; position:fixed; bottom:0; left:0; right:0; max-width:100% !important; margin:0; max-height:90vh; }
+    .modal-overlay { align-items:flex-end; }
+
+    /* income rows wrap better */
+    .income-row { flex-wrap:wrap; gap:6px; }
+    .income-label { font-size:13px; }
+    .summary-row { flex-direction:column; align-items:flex-start; gap:6px; }
+
+    /* streak bar smaller dots */
+    .streak-dot { width:11px; height:11px; }
+
+    /* workout calendar tighter */
+    .cal-day { font-size:11px; border-radius:6px; }
+    .monthly-nav { flex-wrap:wrap; gap:8px; }
+    .monthly-nav > div { width:100%; }
+
+    /* KPI icon smaller */
+    .kpi-icon { width:32px; height:32px; font-size:16px; margin-bottom:8px; }
+
+    /* Scenario cards stack */
+    #scenario-cards { grid-template-columns:1fr !important; }
+    #strategy-tips > div { grid-template-columns:1fr !important; }
   }
+
+  /* ── BOTTOM NAV BAR (mobile only) ── */
+  .bottom-nav {
+    display: none;
+  }
+  @media(max-width:640px) {
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+      padding-bottom: env(safe-area-inset-bottom, 8px);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      cursor: pointer;
+      gap: 3px;
+      border: none;
+      background: none;
+      transition: all .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bn-item .bn-icon { font-size: 20px; line-height: 1; }
+    .bn-item .bn-label {
+      font-size: 9px; font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      font-family: inherit;
+    }
+    .bn-item.active .bn-icon { filter: none; }
+    .bn-item.active .bn-label { color: var(--accent); font-weight: 800; }
+    .bn-item:active { opacity: .6; transform: scale(.92); }
+
+    /* Firebase panel hidden on mobile — accessible via settings in sidebar if needed */
+    .fb-panel { display: none; }
+  }
+
+  /* Mobile header bar */
+  .mobile-header {
+    display: none;
+  }
+  @media(max-width:640px) {
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 6px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .mobile-header-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 800; font-size: 15px; letter-spacing: -0.3px;
+    }
+    .mobile-header-logo span { font-size: 20px; }
+    .mobile-header-right { display:flex; gap:8px; align-items:center; }
+    .mh-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px;
+      font-size: 12px; font-weight: 700; font-family: inherit;
+      cursor: pointer; color: var(--text-secondary);
+    }
+  }
+
+  /* ── FIREBASE PANEL ── */
+  .fb-panel {
+    margin: 12px 12px 0;
+    padding: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+  }
+  .fb-panel-title {
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .fb-btn {
+    width: 100%; padding: 7px 10px; border-radius: 8px;
+    font-family: inherit; font-size: 12px; font-weight: 700;
+    cursor: pointer; border: none; margin-top: 6px; transition: opacity .15s;
+  }
+  .fb-btn:hover { opacity: .85; }
+  .fb-btn-signin  { background: var(--accent); color: #fff; }
+  .fb-btn-signout { background: var(--surface); border: 1.5px solid var(--border); color: var(--text-secondary); }
+  .fb-btn-save    { background: var(--accent3-light); color: var(--accent3); border: 1.5px solid var(--accent3); }
+  .fb-btn-load    { background: var(--gold-light); color: var(--gold); border: 1.5px solid var(--gold); }
+  #fb-status { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px; line-height: 1.4; word-break: break-all; }
+  #fb-config-hint {
+    font-size: 10px; color: var(--accent2); background: var(--accent2-light);
+    border-radius: 6px; padding: 6px 8px; margin-top: 6px; line-height: 1.5; display: none;
+  }
+
+  /* ── TOAST ── */
+  #fb-toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--text-primary); color: #fff;
+    padding: 10px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+  }
+
+  /* ── CONFIG MODAL ── */
+  #fb-config-modal .modal { max-width: 520px; }
+  .code-block {
+    background: #1A1A18; color: #A8E6CF;
+    border-radius: 8px; padding: 14px; font-family: monospace;
+    font-size: 12px; line-height: 1.7; overflow-x: auto;
+    margin: 10px 0;
+  }
+  .code-block .key   { color: #FFD580; }
+  .code-block .val   { color: #A8E6CF; }
+  .code-block .cmt   { color: #6B7280; }
 
   /* ── MISC ── */
   .flex { display:flex; }
@@ -394,6 +654,13 @@
 </head>
 <body>
 
+<div class="mobile-header">
+  <div class="mobile-header-logo"><span>🌿</span> My Life</div>
+  <div class="mobile-header-right">
+    <button class="mh-btn" onclick="navigate('finance'); openMonthPicker()">📅 Chọn tháng</button>
+  </div>
+</div>
+
 <div class="app">
 
 <!-- ════ SIDEBAR ════ -->
@@ -401,8 +668,8 @@
   <div class="sidebar-logo">
     <div class="logo-icon">🌿</div>
     <div>
-      <div class="logo-text">My Dashboard</div>
-      <div class="logo-sub">Cá nhân · 2025</div>
+      <div class="logo-text">My Life</div>
+      <div class="logo-sub">Quản lý cuộc sống · 2025</div>
     </div>
   </div>
 
@@ -436,6 +703,18 @@
     </div>
   </div>
 
+  <!-- Firebase Panel -->
+  <div class="fb-panel">
+    <div class="fb-panel-title">☁️ Firebase Sync</div>
+    <div id="fb-status">— Chưa kết nối</div>
+    <button class="fb-btn fb-btn-signin"  id="btn-signin"  onclick="fbSignIn()"   style="display:none;">🔐 Đăng nhập Google</button>
+    <button class="fb-btn fb-btn-signout" id="btn-signout" onclick="fbSignOut()"  style="display:none;">Đăng xuất</button>
+    <button class="fb-btn fb-btn-save"    id="btn-save"    onclick="saveToFirestore()" style="display:none;">☁️ Lưu ngay</button>
+    <button class="fb-btn fb-btn-load"    id="btn-load"    onclick="loadFromFirestore()" style="display:none;">🔄 Tải lại</button>
+    <button class="fb-btn" onclick="openModal('fb-config-modal')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text-secondary);margin-top:6px;">⚙️ Cài đặt config</button>
+    <div id="fb-config-hint">⚠️ Chưa điền Firebase config. Nhấn "Cài đặt config".</div>
+  </div>
+
   <div class="sidebar-footer">
     <div style="font-weight:600;font-size:13px;color:var(--text-primary);margin-bottom:2px;">Cập nhật lần cuối</div>
     <div id="lastUpdated">—</div>
@@ -451,14 +730,21 @@
 <section id="page-finance" class="page active">
   <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
     <div>
-      <h1>Tài chính Cá nhân</h1>
+      <h1>My Life · Tài chính cá nhân</h1>
       <p>Thu nhập · Chi tiêu · Cân đối theo tháng</p>
     </div>
     <!-- Month/Year Selector -->
-    <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;">
-      <button onclick="changeFinMonth(-1)" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);padding:0 4px;">‹</button>
-      <span id="fin-month-label" style="font-weight:700;font-size:15px;min-width:120px;text-align:center;">Tháng 5 / 2025</span>
-      <button onclick="changeFinMonth(1)" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);padding:0 4px;">›</button>
+    <div class="month-switcher">
+      <button class="month-nav-btn" onclick="changeFinMonth(-1)" aria-label="Tháng trước">‹</button>
+      <button type="button" class="month-trigger" onclick="openMonthPicker()">
+        <div class="month-trigger-icon">📅</div>
+        <div class="month-trigger-label">
+          <span class="month-trigger-kicker">Kỳ theo dõi</span>
+          <span id="fin-month-label" style="font-weight:800;font-size:15px;min-width:120px;">Tháng 5 / 2025</span>
+          <span class="month-trigger-note">Chạm để mở lịch chọn tháng</span>
+        </div>
+      </button>
+      <button class="month-nav-btn" onclick="changeFinMonth(1)" aria-label="Tháng sau">›</button>
     </div>
   </div>
 
@@ -574,18 +860,14 @@
     </div>
   </div>
 
-  <!-- ROW 3: Bình quân năm theo hạng mục -->
+  <!-- ROW 3: Trung bình 12 tháng theo hạng mục -->
   <div class="card">
-    <div class="card-title">Bình quân năm — Chi tiết theo hạng mục thu nhập</div>
-    <div class="inv-header" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;">
-      <span>Hạng mục</span><span>Loại</span><span>Bình quân / tháng</span><span>Tháng cao nhất</span><span>Tổng năm (dự tính)</span>
+    <div class="card-title">Trung bình 12 tháng — Chi tiết theo hạng mục thu nhập</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Tổng thu của từng nguồn được chia đều cho 12 tháng để nhìn tổng quan cả năm, không còn hiển thị phần dự tính thu nhập cả năm.</div>
+    <div class="inv-header desktop-only" style="grid-template-columns:2fr 1fr 1fr 1fr;">
+      <span>Hạng mục</span><span>Loại</span><span>Trung bình / 12 tháng</span><span>Tháng cao nhất</span>
     </div>
     <div id="annual-table"></div>
-    <div class="divider"></div>
-    <div class="summary-row">
-      <span class="summary-label">Tổng thu nhập cả năm (dự tính)</span>
-      <span class="summary-value" id="annual-total">—</span>
-    </div>
   </div>
 
 </section>
@@ -611,11 +893,9 @@
     <div class="card">
       <div class="card-title">
         Danh mục chứng chỉ quỹ
-        <span class="card-action" onclick="openModal('fund-modal')">+ Thêm quỹ</span>
+        <span class="card-action" onclick="openFundModal()">+ Thêm quỹ</span>
       </div>
-      <div class="inv-header">
-        <span>Tên quỹ</span><span>Vốn đầu tư</span><span>Giá trị TT</span><span>Lãi/lỗ</span>
-      </div>
+      <div class="fund-toolbar-note">Bạn có thể <strong>Sửa nhanh</strong> trực tiếp từng quỹ để cập nhật <strong>Vốn đầu tư</strong> và <strong>Giá trị TT</strong> mà không cần nhập lại toàn bộ dòng dữ liệu.</div>
       <div id="fund-list"></div>
       <div class="divider"></div>
       <div class="summary-row">
@@ -888,10 +1168,28 @@
   </div>
 </div>
 
+<!-- Month Picker Modal -->
+<div class="modal-overlay" id="month-picker-modal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-title">Chọn tháng theo dõi</div>
+    <div class="month-helper">Chạm vào tháng bạn muốn xem. Thiết kế này tối ưu cho thao tác trên điện thoại để chọn tháng nhanh hơn thay vì bấm lùi/tới nhiều lần.</div>
+    <div class="month-picker-head">
+      <button class="month-nav-btn" onclick="shiftMonthPickerYear(-1)">‹</button>
+      <div class="month-picker-year" id="month-picker-year">2025</div>
+      <button class="month-nav-btn" onclick="shiftMonthPickerYear(1)">›</button>
+    </div>
+    <div class="month-grid" id="month-picker-grid"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="jumpToCurrentFinMonth()">Tháng hiện tại</button>
+      <button class="btn btn-primary" onclick="closeModal('month-picker-modal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
 <!-- Fund Modal -->
 <div class="modal-overlay" id="fund-modal">
   <div class="modal">
-    <div class="modal-title">Thêm chứng chỉ quỹ</div>
+    <div class="modal-title" id="fund-modal-title">Thêm chứng chỉ quỹ</div>
     <div class="form-group mb-16"><label>Tên quỹ</label><input id="fund-name" placeholder="VD: DCDS, VFMVSF…"></div>
     <div class="form-row">
       <div class="form-group"><label>Vốn đầu tư (đ)</label><input id="fund-capital" type="number" placeholder="50000000"></div>
@@ -899,7 +1197,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('fund-modal')">Huỷ</button>
-      <button class="btn btn-primary" onclick="addFund()">Thêm</button>
+      <button class="btn btn-primary" id="fund-modal-submit" onclick="saveFund()">Lưu quỹ</button>
     </div>
   </div>
 </div>
@@ -1009,9 +1307,144 @@ let state = {
   workouts: {}
 };
 
+/* ══════════════════════════════════════════
+   FIREBASE INTEGRATION
+   ─ Replace the placeholder config below
+     with your own Firebase project config.
+   ─ Enable Firestore + Google Auth in
+     Firebase Console before deploying.
+══════════════════════════════════════════ */
+
+// ── Your Firebase config (paste from Firebase Console → Project Settings) ──
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+
+// ── Firestore document path: users/{uid}/dashboard/data ──
+const FIRESTORE_COLLECTION = 'users';
+const FIRESTORE_DOC        = 'dashboard/data';
+
+// ── Runtime Firebase references (set after SDK loads) ──
+let _db   = null;  // Firestore instance
+let _auth = null;  // Auth instance
+let _uid  = null;  // Current user UID
+let _fbReady = false;
+
+/* ─ Boot Firebase (called once SDK is loaded) ─ */
+function initFirebase() {
+  if (typeof firebase === 'undefined') return;
+
+  // Prevent double-init
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+
+  _db   = firebase.firestore();
+  _auth = firebase.auth();
+  _fbReady = true;
+
+  // Auth state listener
+  _auth.onAuthStateChanged(user => {
+    if (user) {
+      _uid = user.uid;
+      setFbStatus('connected', `✅ ${user.email}`);
+      loadFromFirestore();
+    } else {
+      _uid = null;
+      setFbStatus('disconnected', '— Chưa đăng nhập');
+    }
+  });
+}
+
+/* ─ Status helpers ─ */
+function setFbStatus(state, text) {
+  const el = document.getElementById('fb-status');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = state === 'connected' ? 'var(--accent)' : state === 'error' ? 'var(--accent2)' : 'var(--text-muted)';
+}
+
+/* ─ Google Sign-In ─ */
+function fbSignIn() {
+  if (!_fbReady) return alert('Firebase chưa khởi động. Kiểm tra config.');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  _auth.signInWithPopup(provider).catch(e => {
+    setFbStatus('error', '❌ ' + e.message);
+  });
+}
+
+/* ─ Sign-Out ─ */
+function fbSignOut() {
+  if (!_auth) return;
+  _auth.signOut().then(() => {
+    setFbStatus('disconnected', '— Đã đăng xuất');
+    showFbToast('Đã đăng xuất khỏi tài khoản.');
+  });
+}
+
+/* ─ Save to Firestore ─ */
+async function saveToFirestore() {
+  if (!_db || !_uid) return;
+  try {
+    await _db
+      .collection(FIRESTORE_COLLECTION)
+      .doc(_uid)
+      .collection('dashboard')
+      .doc('data')
+      .set({ ...state, _savedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    showFbToast('☁️ Đã lưu lên Firebase');
+  } catch(e) {
+    setFbStatus('error', '❌ Lưu thất bại: ' + e.message);
+  }
+}
+
+/* ─ Load from Firestore ─ */
+async function loadFromFirestore() {
+  if (!_db || !_uid) return;
+  setFbStatus('connected', '⏳ Đang tải dữ liệu…');
+  try {
+    const snap = await _db
+      .collection(FIRESTORE_COLLECTION)
+      .doc(_uid)
+      .collection('dashboard')
+      .doc('data')
+      .get();
+    if (snap.exists) {
+      const remote = snap.data();
+      delete remote._savedAt;
+      state = { ...state, ...remote };
+      // Also mirror to localStorage as offline cache
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      renderAll();
+      showFbToast('☁️ Đã tải dữ liệu từ Firebase');
+    } else {
+      showFbToast('☁️ Chưa có dữ liệu trên Firebase. Đang dùng dữ liệu cục bộ.');
+    }
+    setFbStatus('connected', `✅ ${_auth.currentUser?.email}`);
+  } catch(e) {
+    setFbStatus('error', '❌ Tải thất bại: ' + e.message);
+  }
+}
+
+/* ─ Toast notification ─ */
+function showFbToast(msg) {
+  const t = document.getElementById('fb-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1'; t.style.transform = 'translateY(0)';
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; }, 3000);
+}
+
+/* ─ Unified saveState — writes localStorage + Firestore ─ */
 function saveState() {
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
   document.getElementById('lastUpdated').textContent = new Date().toLocaleString('vi-VN');
+  // Debounced Firestore sync (avoid too many writes on rapid edits)
+  clearTimeout(saveState._timer);
+  saveState._timer = setTimeout(() => { if (_uid) saveToFirestore(); }, 1200);
 }
 
 function loadState() {
@@ -1055,7 +1488,7 @@ function switchTab(group, tab) {
 
 /* ══ MODALS ══ */
 function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); if(id === 'fund-modal') editingFundId = null; }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
 });
@@ -1065,6 +1498,8 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 ══════════════════════════════════════════ */
 let finYear = new Date().getFullYear();
 let finMonth = new Date().getMonth() + 1; // 1-12
+let monthPickerYear = finYear;
+let editingFundId = null;
 
 function finKey(y, m) { return `${y}-${String(m).padStart(2,'0')}`; }
 function currentFinKey() { return finKey(finYear, finMonth); }
@@ -1078,6 +1513,44 @@ function changeFinMonth(dir) {
   if(finMonth > 12) { finMonth = 1; finYear++; }
   if(finMonth < 1) { finMonth = 12; finYear--; }
   renderFinance();
+}
+
+function openMonthPicker() {
+  monthPickerYear = finYear;
+  renderMonthPicker();
+  openModal('month-picker-modal');
+}
+
+function shiftMonthPickerYear(dir) {
+  monthPickerYear += dir;
+  renderMonthPicker();
+}
+
+function selectFinMonth(month) {
+  finYear = monthPickerYear;
+  finMonth = month;
+  closeModal('month-picker-modal');
+  renderFinance();
+}
+
+function jumpToCurrentFinMonth() {
+  const now = new Date();
+  finYear = now.getFullYear();
+  finMonth = now.getMonth() + 1;
+  closeModal('month-picker-modal');
+  renderFinance();
+}
+
+function renderMonthPicker() {
+  const months = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const grid = document.getElementById('month-picker-grid');
+  if(!grid) return;
+  document.getElementById('month-picker-year').textContent = monthPickerYear;
+  grid.innerHTML = months.map((label, index) => {
+    const month = index + 1;
+    const active = month === finMonth && monthPickerYear === finYear;
+    return `<button type="button" class="month-option ${active ? 'active' : ''}" onclick="selectFinMonth(${month})">${label}</button>`;
+  }).join('');
 }
 
 /* ══ ADD INCOME ══ */
@@ -1276,8 +1749,8 @@ function renderBarChart() {
   const nonZero = totals.filter(v=>v>0);
   const high = nonZero.length ? Math.max(...nonZero) : 0;
   const low = nonZero.length ? Math.min(...nonZero) : 0;
-  const avg = nonZero.length ? (nonZero.reduce((a,b)=>a+b,0)/nonZero.length) : 0;
   const sum = totals.reduce((a,b)=>a+b,0);
+  const avg = sum / 12;
 
   document.getElementById('bar-max').textContent = high.toFixed(1) + ' tr';
   document.getElementById('bar-min').textContent = low ? low.toFixed(1) + ' tr' : '—';
@@ -1311,8 +1784,7 @@ function renderAnnualTable() {
   const table = document.getElementById('annual-table');
   table.innerHTML = '';
 
-  // Collect unique income sources across all months of finYear
-  const sourceMap = {}; // name+type -> [amounts per month]
+  const sourceMap = {};
   for(let m=1;m<=12;m++) {
     const md = getMonthData(finKey(finYear,m));
     md.incomes.forEach(inc => {
@@ -1322,81 +1794,137 @@ function renderAnnualTable() {
     });
   }
 
+  const yearlyTotal = Array.from({length:12}, (_, idx) => getMonthData(finKey(finYear, idx + 1)).incomes.reduce((a,i)=>a+i.amount,0)).reduce((a,b)=>a+b,0);
+  const avgAll = yearlyTotal / 12;
+  document.getElementById('kpi-avg').textContent = yearlyTotal > 0 ? fmt(avgAll) : '—';
+  document.getElementById('kpi-avg-note').textContent = yearlyTotal > 0 ? `Tổng thu ${finYear} chia đều cho 12 tháng` : 'Chưa có dữ liệu để tính trung bình';
+
   if(!Object.keys(sourceMap).length) {
-    table.innerHTML = '<div class="text-muted text-sm" style="padding:16px;text-align:center;">Nhập dữ liệu thu nhập để xem thống kê bình quân.</div>';
-    document.getElementById('annual-total').textContent = '—';
-    document.getElementById('kpi-avg').textContent = '—';
-    document.getElementById('kpi-avg-note').textContent = '—';
+    table.innerHTML = '<div class="text-muted text-sm" style="padding:16px;text-align:center;">Nhập dữ liệu thu nhập để xem trung bình 12 tháng.</div>';
     return;
   }
 
-  let grandYearly = 0;
-  Object.values(sourceMap).forEach(src => {
-    const nonZero = src.months.filter(v=>v>0);
-    const avg = nonZero.length ? nonZero.reduce((a,b)=>a+b,0)/nonZero.length : 0;
-    const yearly = avg * 12;
-    const high = nonZero.length ? Math.max(...nonZero) : 0;
-    grandYearly += yearly;
-    const isActive = src.type === 'active';
-    table.innerHTML += `
-      <div class="inv-row" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;">
-        <div><div class="inv-name">${src.name}</div><div class="inv-sub">${nonZero.length} tháng có dữ liệu</div></div>
-        <div><span class="badge ${isActive?'badge-green':'badge-gold'}">${isActive?'Lương':'Referral'}</span></div>
-        <div class="font-bold">${fmt(avg)}</div>
-        <div style="color:var(--accent3);font-weight:600;">${fmt(high)}</div>
-        <div class="font-bold" style="color:var(--accent);">${fmt(yearly)}</div>
-      </div>`;
-  });
-
-  document.getElementById('annual-total').textContent = fmtFull(grandYearly);
-
-  // Update avg KPI
-  const allMonthTotals = [];
-  for(let m=1;m<=12;m++){
-    const md = getMonthData(finKey(finYear,m));
-    const t = md.incomes.reduce((a,i)=>a+i.amount,0);
-    if(t>0) allMonthTotals.push(t);
-  }
-  const avgAll = allMonthTotals.length ? allMonthTotals.reduce((a,b)=>a+b,0)/allMonthTotals.length : 0;
-  document.getElementById('kpi-avg').textContent = fmt(avgAll);
-  document.getElementById('kpi-avg-note').textContent = `Dựa trên ${allMonthTotals.length}/12 tháng`;
+  Object.values(sourceMap)
+    .sort((a,b) => b.months.reduce((x,y)=>x+y,0) - a.months.reduce((x,y)=>x+y,0))
+    .forEach(src => {
+      const total = src.months.reduce((a,b)=>a+b,0);
+      const avg = total / 12;
+      const high = Math.max(...src.months);
+      const monthsWithData = src.months.filter(v=>v>0).length;
+      const isActive = src.type === 'active';
+      table.innerHTML += `
+        <div class="inv-row" style="grid-template-columns:2fr 1fr 1fr 1fr;">
+          <div><div class="inv-name">${src.name}</div><div class="inv-sub">${monthsWithData}/12 tháng có dữ liệu</div></div>
+          <div><span class="badge ${isActive?'badge-green':'badge-gold'}">${isActive?'Lương':'Referral'}</span></div>
+          <div class="font-bold">${fmt(avg)}</div>
+          <div style="color:var(--accent3);font-weight:600;">${high > 0 ? fmt(high) : '—'}</div>
+        </div>`;
+    });
 }
 
 /* ══════════════════════════════════════════
    INVESTMENT
 ══════════════════════════════════════════ */
-function addFund() {
+function resetFundForm() {
+  document.getElementById('fund-name').value='';
+  document.getElementById('fund-capital').value='';
+  document.getElementById('fund-market').value='';
+}
+
+function openFundModal(id = null) {
+  editingFundId = id;
+  const title = document.getElementById('fund-modal-title');
+  const submit = document.getElementById('fund-modal-submit');
+  if(id) {
+    const fund = state.funds.find(f => f.id === id);
+    if(!fund) return;
+    title.textContent = 'Cập nhật chứng chỉ quỹ';
+    submit.textContent = 'Lưu thay đổi';
+    document.getElementById('fund-name').value = fund.name || '';
+    document.getElementById('fund-capital').value = fund.capital || '';
+    document.getElementById('fund-market').value = fund.market || '';
+  } else {
+    title.textContent = 'Thêm chứng chỉ quỹ';
+    submit.textContent = 'Lưu quỹ';
+    resetFundForm();
+  }
+  openModal('fund-modal');
+}
+
+function saveFund() {
   const name = document.getElementById('fund-name').value.trim();
   const capital = parseFloat(document.getElementById('fund-capital').value) || 0;
   const market = parseFloat(document.getElementById('fund-market').value) || 0;
   if(!name) return alert('Nhập tên quỹ');
-  state.funds.push({ id: genId(), name, capital, market });
-  saveState(); closeModal('fund-modal');
-  document.getElementById('fund-name').value=''; document.getElementById('fund-capital').value=''; document.getElementById('fund-market').value='';
+
+  if(editingFundId) {
+    state.funds = state.funds.map(f => f.id === editingFundId ? { ...f, name, capital, market } : f);
+  } else {
+    state.funds.push({ id: genId(), name, capital, market });
+  }
+
+  saveState();
+  closeModal('fund-modal');
+  editingFundId = null;
+  resetFundForm();
   renderFunds();
 }
 
-function deleteFund(id) { state.funds = state.funds.filter(f=>f.id!==id); saveState(); renderFunds(); }
+function deleteFund(id) {
+  state.funds = state.funds.filter(f=>f.id!==id);
+  if(editingFundId === id) editingFundId = null;
+  saveState();
+  renderFunds();
+}
 
 function renderFunds() {
   const list = document.getElementById('fund-list');
   list.innerHTML = '';
   let totalCap = 0, totalMkt = 0;
+
+  if(!state.funds.length) {
+    list.innerHTML = '<div class="text-muted text-sm" style="padding:16px 0;text-align:center;">Chưa có quỹ nào. Nhấn + Thêm quỹ để bắt đầu.</div>';
+    document.getElementById('fund-total').textContent = '—';
+    renderPortSummary();
+    return;
+  }
+
   state.funds.forEach(f => {
-    totalCap += f.capital; totalMkt += f.market;
+    totalCap += f.capital;
+    totalMkt += f.market;
     const diff = f.market - f.capital;
-    const pct = f.capital ? ((diff/f.capital)*100).toFixed(1) : 0;
+    const pct = f.capital ? ((diff/f.capital)*100).toFixed(1) : '0.0';
+    const diffLabel = `${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}`;
     list.innerHTML += `
-      <div class="inv-row">
-        <div><div class="inv-name">${f.name}</div></div>
-        <div>${fmt(f.capital)}</div>
-        <div>${fmt(f.market)}</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span class="${diff>=0?'positive':'negative'}">${diff>=0?'+':''}${pct}%</span>
-          <button class="delete-btn" onclick="deleteFund('${f.id}')">✕</button>
+      <div class="fund-card">
+        <div class="fund-card-top">
+          <div>
+            <div class="fund-card-name">${f.name}</div>
+            <div class="fund-card-sub">${diff >= 0 ? 'Đang tăng trưởng tích cực' : 'Biến động âm, nên theo dõi thêm'}</div>
+          </div>
+          <span class="badge ${diff>=0?'badge-green':'badge-orange'}">${diff>=0?'+':''}${pct}%</span>
+        </div>
+        <div class="fund-metrics">
+          <div class="metric-chip">
+            <div class="metric-chip-label">Vốn đầu tư</div>
+            <div class="metric-chip-value">${fmt(f.capital)}</div>
+          </div>
+          <div class="metric-chip">
+            <div class="metric-chip-label">Giá trị TT</div>
+            <div class="metric-chip-value">${fmt(f.market)}</div>
+          </div>
+          <div class="metric-chip">
+            <div class="metric-chip-label">Lãi / lỗ</div>
+            <div class="metric-chip-value" style="color:${diff>=0?'var(--accent)':'var(--accent2)'};">${diffLabel}</div>
+          </div>
+        </div>
+        <div class="fund-actions">
+          <button class="action-btn action-btn-primary" onclick="openFundModal('${f.id}')">Sửa nhanh</button>
+          <button class="action-btn action-btn-danger" onclick="deleteFund('${f.id}')">Xoá dòng</button>
         </div>
       </div>`;
   });
+
   document.getElementById('fund-total').textContent = fmt(totalMkt);
   renderPortSummary();
 }
@@ -1740,10 +2268,128 @@ function renderAll() {
   renderWorkout();
 }
 
+/* ══════════════════════════════════════════
+   FIREBASE CONFIG — load from localStorage
+══════════════════════════════════════════ */
+function loadFirebaseConfig() {
+  const saved = localStorage.getItem('fb_config_v1');
+  if (saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      Object.assign(FIREBASE_CONFIG, cfg);
+      return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
+function saveFirebaseConfig() {
+  const cfg = {
+    apiKey:            document.getElementById('cfg-apiKey').value.trim(),
+    authDomain:        document.getElementById('cfg-authDomain').value.trim(),
+    projectId:         document.getElementById('cfg-projectId').value.trim(),
+    storageBucket:     document.getElementById('cfg-storageBucket').value.trim(),
+    messagingSenderId: document.getElementById('cfg-messagingSenderId').value.trim(),
+    appId:             document.getElementById('cfg-appId').value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.projectId) return alert('Vui lòng điền ít nhất API Key và Project ID.');
+  localStorage.setItem('fb_config_v1', JSON.stringify(cfg));
+  Object.assign(FIREBASE_CONFIG, cfg);
+  closeModal('fb-config-modal');
+  showFbToast('✅ Đã lưu config. Đang khởi động Firebase…');
+  // Re-init Firebase with new config
+  initFirebase();
+}
+
+function prefillConfigForm() {
+  // Pre-fill form if config already saved
+  const saved = localStorage.getItem('fb_config_v1');
+  if (!saved) return;
+  try {
+    const cfg = JSON.parse(saved);
+    ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId'].forEach(k => {
+      const el = document.getElementById('cfg-' + k);
+      if (el && cfg[k]) el.value = cfg[k];
+    });
+  } catch(e) {}
+}
+
+/* ─ Update button visibility based on auth state ─ */
+function updateFbButtons(loggedIn) {
+  document.getElementById('btn-signin').style.display  = loggedIn ? 'none' : 'block';
+  document.getElementById('btn-signout').style.display = loggedIn ? 'block' : 'none';
+  document.getElementById('btn-save').style.display    = loggedIn ? 'block' : 'none';
+  document.getElementById('btn-load').style.display    = loggedIn ? 'block' : 'none';
+}
+
+// Override setFbStatus to also toggle buttons
+const _origSetFbStatus = setFbStatus;
+function setFbStatus(state, text) {
+  _origSetFbStatus(state, text);
+  updateFbButtons(state === 'connected');
+}
+
 /* ══ INIT ══ */
 loadState();
 document.getElementById('lastUpdated').textContent = new Date().toLocaleString('vi-VN');
 renderAll();
+prefillConfigForm();
+
+// Boot Firebase if config is available
+const hasConfig = loadFirebaseConfig();
+if (hasConfig && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY') {
+  initFirebase();
+  document.getElementById('fb-config-hint').style.display = 'none';
+  document.getElementById('btn-signin').style.display = 'block';
+} else {
+  document.getElementById('fb-config-hint').style.display = 'block';
+  document.getElementById('fb-status').textContent = '— Chưa có config';
+}
 </script>
+<!-- ════ FIREBASE TOAST ════ -->
+<div id="fb-toast"></div>
+
+<!-- ════ FIREBASE CONFIG MODAL ════ -->
+<div class="modal-overlay" id="fb-config-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">⚙️ Firebase Config</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">
+      Dán config từ <strong>Firebase Console → Project Settings → Your apps</strong> vào đây rồi nhấn Lưu. Config sẽ được lưu vào localStorage của trình duyệt.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>API Key</label><input id="cfg-apiKey" placeholder="AIzaSy…"></div>
+      <div class="form-group"><label>Auth Domain</label><input id="cfg-authDomain" placeholder="your-app.firebaseapp.com"></div>
+      <div class="form-group"><label>Project ID</label><input id="cfg-projectId" placeholder="your-project-id"></div>
+      <div class="form-group"><label>Storage Bucket</label><input id="cfg-storageBucket" placeholder="your-app.appspot.com"></div>
+      <div class="form-group"><label>Messaging Sender ID</label><input id="cfg-messagingSenderId" placeholder="123456789"></div>
+      <div class="form-group"><label>App ID</label><input id="cfg-appId" placeholder="1:123:web:abc…"></div>
+    </div>
+
+    <div class="code-block" style="margin-top:14px;">
+      <span class="cmt">// Firestore Security Rules (dán vào Firebase Console → Firestore → Rules)</span><br>
+      rules_version = <span class="val">'2'</span>;<br>
+      service cloud.firestore {<br>
+      &nbsp;&nbsp;match /databases/{database}/documents {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;match /users/{userId}/{document=**} {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if <span class="key">request.auth</span> != null<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;&amp; <span class="key">request.auth.uid</span> == userId;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+
+    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.6;">
+      📌 Dữ liệu lưu tại: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;">users/{your-uid}/dashboard/data</code>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('fb-config-modal')">Đóng</button>
+      <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
+    </div>
+  </div>
+</div>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
