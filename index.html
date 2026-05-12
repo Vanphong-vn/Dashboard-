@@ -241,26 +241,28 @@
   .status-done { background: var(--accent-light); color: var(--accent); }
   .status-reading { background: var(--gold-light); color: var(--gold); }
 
-  /* ── CALENDAR ── */
-  .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-  .cal-header { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); padding: 4px 0; text-transform: uppercase; }
+  /* ── CALENDAR — compact & visual ── */
+  .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .cal-header { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); padding: 3px 0; text-transform: uppercase; }
   .cal-day {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer;
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
     border: 1.5px solid transparent; transition: all 0.1s; position: relative;
+    gap: 1px;
   }
-  .cal-day:hover { border-color: var(--accent); }
+  .cal-day:hover { border-color: var(--accent); background: var(--surface2); }
   .cal-day.empty { cursor: default; }
+  .cal-day.empty:hover { border-color: transparent; background: none; }
   .cal-day.today { border-color: var(--accent2); color: var(--accent2); font-weight: 800; }
-  .cal-day.has-workout { background: var(--accent-light); color: var(--accent); font-weight: 700; }
-  .cal-day.has-workout.badminton { background: #EAF2F8; color: var(--accent3); }
-  .cal-day.has-workout.gym { background: var(--accent-light); color: var(--accent); }
-  .cal-day.has-workout.walk { background: var(--gold-light); color: var(--gold); }
-  .cal-day.has-workout.multi { background: #F3E8FF; color: #7C3AED; }
-  .workout-dot { position:absolute; bottom:2px; width:4px;height:4px;border-radius:50%; }
+  .cal-day.has-workout { font-weight: 700; }
+  .cal-day.has-workout.badminton { background: #EAF2F8; color: var(--accent3); border-color: #B8D6EA; }
+  .cal-day.has-workout.gym { background: var(--accent-light); color: var(--accent); border-color: #B0D9C3; }
+  .cal-day.has-workout.walk { background: var(--gold-light); color: #A07C2A; border-color: #DECA9A; }
+  .cal-day.has-workout.multi { background: #F3E8FF; color: #7C3AED; border-color: #D5BAF7; }
+  .cal-day-icons { font-size: 7px; line-height: 1; }
 
-  .workout-legend { display:flex;gap:12px;flex-wrap:wrap; margin-top:12px; }
-  .legend-item { display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary); }
+  .workout-legend { display:flex;gap:10px;flex-wrap:wrap; margin-top:10px; }
+  .legend-item { display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary); }
   .legend-dot { width:10px;height:10px;border-radius:3px; }
 
   /* ── WORKOUT STATS ── */
@@ -412,6 +414,15 @@
 
     /* streak bar smaller dots */
     .streak-dot { width:11px; height:11px; }
+
+    /* workout new layout - stack on mobile */
+    #page-workout > div[style*="grid-template-columns:1fr 280px"] {
+      grid-template-columns: 1fr !important;
+    }
+    #page-workout > div > div:last-child {
+      flex-direction: row !important;
+      flex-wrap: wrap;
+    }
 
     /* workout calendar tighter */
     .cal-day { font-size:11px; border-radius:6px; }
@@ -671,7 +682,7 @@
     <div class="logo-icon">🌿</div>
     <div>
       <div class="logo-text">My Life</div>
-      <div class="logo-sub">Cá nhân · 2025</div>
+      <div class="logo-sub">Cá nhân · Dashboard</div>
     </div>
   </div>
 
@@ -1070,56 +1081,86 @@
     <p>Cầu lông · Gym · Đi bộ — theo dõi lịch tập hàng ngày</p>
   </div>
 
-  <!-- Stats -->
-  <div class="grid-4 mb-16">
-    <div class="card" style="text-align:center;">
-      <div style="font-size:28px;font-weight:800;color:var(--accent3);" id="stat-badminton">0</div>
-      <div class="text-sm text-muted mt-4">🏸 Cầu lông</div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div style="font-size:28px;font-weight:800;color:var(--accent);" id="stat-gym">0</div>
-      <div class="text-sm text-muted mt-4">💪 Gym</div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div style="font-size:28px;font-weight:800;color:var(--gold);" id="stat-walk">0</div>
-      <div class="text-sm text-muted mt-4">🚶 Đi bộ</div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div style="font-size:28px;font-weight:800;color:var(--text-primary);" id="stat-total">0</div>
-      <div class="text-sm text-muted mt-4">⚡ Tổng buổi</div>
-    </div>
-  </div>
+  <!-- Layout 2 cột: Calendar trái, Stats + Streak phải -->
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start;">
 
-  <div class="grid-2">
-    <!-- Calendar -->
-    <div class="card" style="grid-column:span 2;">
-      <div class="card-title">Lịch tập tháng</div>
-      <div class="monthly-nav">
-        <button onclick="changeMonth(-1)">‹</button>
-        <span id="cal-month-label">Tháng 5, 2025</span>
-        <button onclick="changeMonth(1)">›</button>
-        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="workout-type-select" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;background:var(--surface);">
+    <!-- CỘT TRÁI: Calendar nhỏ gọn -->
+    <div class="card">
+      <!-- Header tháng + chọn môn -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button onclick="changeMonth(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:15px;line-height:1;">‹</button>
+          <span id="cal-month-label" style="font-size:15px;font-weight:800;min-width:110px;text-align:center;"></span>
+          <button onclick="changeMonth(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:15px;line-height:1;">›</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <select id="workout-type-select" style="padding:5px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;background:var(--surface);cursor:pointer;">
             <option value="badminton">🏸 Cầu lông</option>
             <option value="gym">💪 Gym</option>
             <option value="walk">🚶 Đi bộ</option>
           </select>
-          <span class="text-sm text-muted" style="align-self:center;">Click ngày để toggle</span>
+          <span style="font-size:11px;color:var(--text-muted);">Click để toggle</span>
         </div>
       </div>
+
+      <!-- Calendar grid -->
       <div class="calendar-grid" id="workout-calendar"></div>
-      <div class="workout-legend mt-8">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--accent3);"></div>Cầu lông</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>Gym</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--gold);"></div>Đi bộ</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;opacity:0.6;"></div>Nhiều môn</div>
+
+      <!-- Legend -->
+      <div class="workout-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#457B9D;"></div>Cầu lông</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2D6A4F;"></div>Gym</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C9A84C;"></div>Đi bộ</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;opacity:0.7;"></div>Nhiều môn</div>
       </div>
     </div>
 
-    <!-- Streak -->
-    <div class="card col-span-2">
-      <div class="card-title">Chuỗi ngày tập – 30 ngày gần nhất</div>
-      <div class="streak-bar" id="streak-bar"></div>
+    <!-- CỘT PHẢI: Stats + Streak + Monthly summary -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <!-- Stat cards 2x2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="card" style="padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:800;color:#457B9D;letter-spacing:-1px;" id="stat-badminton">0</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">🏸 Cầu lông</div>
+        </div>
+        <div class="card" style="padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-1px;" id="stat-gym">0</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">💪 Gym</div>
+        </div>
+        <div class="card" style="padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:800;color:#A07C2A;letter-spacing:-1px;" id="stat-walk">0</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">🚶 Đi bộ</div>
+        </div>
+        <div class="card" style="padding:14px;text-align:center;background:var(--accent);border-color:var(--accent);">
+          <div style="font-size:26px;font-weight:800;color:white;letter-spacing:-1px;" id="stat-total">0</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">⚡ Tổng buổi</div>
+        </div>
+      </div>
+
+      <!-- Tỉ lệ tập / tuần -->
+      <div class="card" style="padding:16px;">
+        <div class="card-title" style="margin-bottom:10px;">Phân bố môn tháng này</div>
+        <div id="workout-dist-bars" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Streak 30 ngày -->
+      <div class="card" style="padding:16px;">
+        <div class="card-title" style="margin-bottom:8px;">Streak – 30 ngày gần nhất</div>
+        <div class="streak-bar" id="streak-bar" style="gap:2px;"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--accent);"></div>Đủ buổi
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--gold);"></div>1 buổi
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted);">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--border);"></div>Nghỉ
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -2226,8 +2267,8 @@ function renderWorkout() {
 
     cal.innerHTML += `
       <div class="${cls}" onclick="toggleWorkout('${ds}')" title="${ds}">
-        ${d}
-        ${icons ? `<div style="font-size:8px;line-height:1;">${icons}</div>` : ''}
+        <span>${d}</span>
+        ${icons ? `<div class="cal-day-icons">${icons}</div>` : ''}
       </div>`;
   }
 
@@ -2235,6 +2276,29 @@ function renderWorkout() {
   document.getElementById('stat-gym').textContent = gymCount;
   document.getElementById('stat-walk').textContent = walkCount;
   document.getElementById('stat-total').textContent = badCount+gymCount+walkCount;
+
+  // Distribution bars
+  const total = badCount + gymCount + walkCount;
+  const distEl = document.getElementById('workout-dist-bars');
+  if(distEl) {
+    const items = [
+      { label:'🏸 Cầu lông', count: badCount, color:'#457B9D' },
+      { label:'💪 Gym',      count: gymCount,  color:'#2D6A4F' },
+      { label:'🚶 Đi bộ',   count: walkCount,  color:'#C9A84C' },
+    ];
+    distEl.innerHTML = items.map(it => {
+      const pct = total > 0 ? Math.round(it.count/total*100) : 0;
+      return `<div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:3px;">
+          <span style="color:var(--text-secondary);">${it.label}</span>
+          <span style="color:${it.color};">${it.count} buổi${total>0?' · '+pct+'%':''}</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${it.color};border-radius:99px;transition:width 0.6s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
   renderStreak();
 }
