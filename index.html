@@ -346,56 +346,6 @@
   .modal-title { font-size:18px;font-weight:700;margin-bottom:20px; }
   .modal-footer { display:flex;gap:8px;justify-content:flex-end;margin-top:20px; }
 
-  .desktop-only { display:block; }
-  .month-switcher { display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:6px; }
-  .month-nav-btn {
-    width:36px;height:36px;border-radius:10px;border:none;background:var(--surface2);
-    color:var(--text-secondary);font-size:18px;font-weight:700;cursor:pointer;
-  }
-  .month-trigger {
-    border:none;background:transparent;display:flex;align-items:center;gap:12px;cursor:pointer;
-    min-width:220px;padding:4px 8px;text-align:left;color:var(--text-primary);font-family:inherit;
-  }
-  .month-trigger-icon {
-    width:38px;height:38px;border-radius:12px;background:var(--accent-light);color:var(--accent);
-    display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
-  }
-  .month-trigger-label { display:flex;flex-direction:column;gap:2px;min-width:0; }
-  .month-trigger-kicker { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px; }
-  .month-trigger-note { font-size:12px;color:var(--text-muted); }
-  .month-picker-head { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px; }
-  .month-picker-year { font-size:22px;font-weight:800;letter-spacing:-0.5px; }
-  .month-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
-  .month-option {
-    border:1.5px solid var(--border);background:var(--surface2);border-radius:14px;padding:14px 10px;
-    text-align:center;font-weight:700;cursor:pointer;transition:all .15s;color:var(--text-secondary);font-family:inherit;
-  }
-  .month-option:hover { border-color:var(--accent); color:var(--accent); }
-  .month-option.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 8px 18px rgba(45,106,79,0.18); }
-  .month-helper { font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:14px; }
-
-  .fund-toolbar-note {
-    padding:12px 14px;margin-bottom:10px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);
-    color:var(--text-secondary);font-size:12.5px;line-height:1.6;
-  }
-  .fund-card { padding:16px 0;border-bottom:1px solid var(--border); }
-  .fund-card:last-child { border-bottom:none; }
-  .fund-card-top { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px; }
-  .fund-card-name { font-size:15px;font-weight:800; }
-  .fund-card-sub { font-size:12px;color:var(--text-muted);margin-top:4px; }
-  .fund-metrics { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
-  .metric-chip { background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px; }
-  .metric-chip-label { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px; }
-  .metric-chip-value { font-size:15px;font-weight:800;color:var(--text-primary);line-height:1.35; }
-  .fund-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:12px; }
-  .action-btn {
-    border:none;border-radius:10px;padding:9px 12px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
-    background:var(--surface2);color:var(--text-secondary);border:1px solid var(--border);
-  }
-  .action-btn-primary { background:var(--accent-light); color:var(--accent); border-color:transparent; }
-  .action-btn-danger { background:var(--accent2-light); color:var(--accent2); border-color:transparent; }
-
-
   /* ── RESPONSIVE ── */
   @media(max-width:900px) {
     .grid-4 { grid-template-columns:1fr 1fr; }
@@ -407,10 +357,10 @@
     /* Hide desktop sidebar */
     .sidebar { display:none; }
 
-    /* Main fills screen, padded for bottom nav */
+    /* Main fills screen, padded for bottom nav and top header */
     .main {
       margin-left:0;
-      padding:12px 12px 90px;
+      padding:16px 12px 90px;
       max-width:100%;
     }
 
@@ -428,24 +378,15 @@
     .page-header > div:last-child { width:100%; }
     /* Month nav full width */
     #fin-month-label { min-width:0 !important; flex:1; }
-    .month-switcher { width:100%; }
-    .month-trigger { min-width:0; flex:1; padding:6px; }
-    .month-trigger-note { display:none; }
-    .month-grid { grid-template-columns:repeat(2,1fr); }
 
     /* Investment table columns collapse */
     .inv-header, .inv-row { grid-template-columns:1.8fr 1fr 1fr !important; }
     .inv-header span:last-child, .inv-row > *:last-child { display:none; }
     .saving-row { grid-template-columns:1.5fr 1fr auto !important; }
-    .fund-metrics { grid-template-columns:1fr; }
-    .fund-card-top { flex-direction:column; }
-    .fund-actions { flex-direction:column; }
-    .action-btn { width:100%; }
 
     /* Annual table mobile */
-    #annual-table .inv-row { grid-template-columns:1.4fr .9fr 1fr !important; }
+    #annual-table .inv-row { grid-template-columns:1.5fr 1fr 1fr !important; }
     #annual-table .inv-row > *:nth-child(4) { display:none; }
-    .desktop-only { display:none !important; }
 
     /* Tabs wrap */
     .tabs { flex-wrap:wrap; gap:4px; }
@@ -468,7 +409,6 @@
     /* income rows wrap better */
     .income-row { flex-wrap:wrap; gap:6px; }
     .income-label { font-size:13px; }
-    .summary-row { flex-direction:column; align-items:flex-start; gap:6px; }
 
     /* streak bar smaller dots */
     .streak-dot { width:11px; height:11px; }
@@ -632,10 +572,68 @@
   .delete-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;transition:color 0.15s;padding:4px; }
   .delete-btn:hover { color:#DC2626; }
 
-  /* ── PAGE-SPECIFIC ── */
+  /* ── MONTH PICKER POPUP ── */
+  .month-picker-trigger {
+    display:flex;align-items:center;gap:8px;
+    background:var(--surface);border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);padding:8px 14px;
+    cursor:pointer;user-select:none;transition:border-color 0.15s;
+    position:relative;
+  }
+  .month-picker-trigger:hover { border-color:var(--accent); }
+  .month-picker-popup {
+    display:none;position:absolute;top:calc(100% + 8px);right:0;
+    background:var(--surface);border:1.5px solid var(--border);
+    border-radius:var(--radius);padding:16px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:500;
+    min-width:260px;
+  }
+  .month-picker-popup.open { display:block; }
+  .mpp-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
+  .mpp-year { font-weight:800;font-size:15px; }
+  .mpp-nav { background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:14px;line-height:1; }
+  .mpp-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:6px; }
+  .mpp-month {
+    padding:8px 4px;border-radius:8px;text-align:center;
+    font-size:12px;font-weight:600;cursor:pointer;
+    color:var(--text-secondary);transition:all 0.12s;
+    border:1.5px solid transparent;
+  }
+  .mpp-month:hover { background:var(--surface2);border-color:var(--border); }
+  .mpp-month.current { background:var(--accent-light);color:var(--accent);border-color:var(--accent); }
+  .mpp-month.selected { background:var(--accent);color:white;border-color:var(--accent); }
+  /* ── FUND INLINE EDIT ── */
+  .fund-edit-input {
+    width:100%;padding:5px 8px;border:1.5px solid var(--accent);
+    border-radius:6px;font-family:inherit;font-size:12px;
+    background:var(--accent-light);color:var(--text-primary);outline:none;
+  }
+  .fund-edit-input:focus { border-color:var(--accent); }
+  .inv-row .edit-btn {
+    background:none;border:1.5px solid var(--border);border-radius:6px;
+    cursor:pointer;color:var(--text-muted);font-size:12px;
+    padding:3px 8px;transition:all 0.12s;white-space:nowrap;
+  }
+  .inv-row .edit-btn:hover { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
+  .inv-row .edit-btn.save-btn { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
+  .inv-row.editing { background:var(--accent-light);border-radius:8px; }
+
   .monthly-nav { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
   .monthly-nav span { font-size:15px;font-weight:700; }
   .monthly-nav button { background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:16px; }
+
+  @media(max-width:640px) {
+    .month-picker-popup {
+      position:fixed !important;
+      top:auto !important;
+      bottom:80px;
+      right:12px;
+      left:12px;
+      max-width:calc(100vw - 24px);
+    }
+    .mpp-grid { gap:8px; }
+    .mpp-month { padding:10px 4px; font-size:13px; }
+  }
 
   .streak-bar { display:flex;gap:3px;flex-wrap:wrap; }
   .streak-dot { width:14px;height:14px;border-radius:3px;background:var(--border); }
@@ -654,10 +652,14 @@
 </head>
 <body>
 
-<div class="mobile-header">
-  <div class="mobile-header-logo"><span>🌿</span> My Life</div>
+<!-- ════ MOBILE HEADER (chỉ hiện trên mobile) ════ -->
+<div class="mobile-header" id="mobile-header">
+  <div class="mobile-header-logo">
+    <span>🌿</span> My Life
+  </div>
   <div class="mobile-header-right">
-    <button class="mh-btn" onclick="navigate('finance'); openMonthPicker()">📅 Chọn tháng</button>
+    <span id="mobile-month-label" style="font-size:13px;font-weight:700;color:var(--text-secondary);"></span>
+    <button class="mh-btn" onclick="openModal('fb-config-modal')">☁️</button>
   </div>
 </div>
 
@@ -669,7 +671,7 @@
     <div class="logo-icon">🌿</div>
     <div>
       <div class="logo-text">My Life</div>
-      <div class="logo-sub">Quản lý cuộc sống · 2025</div>
+      <div class="logo-sub">Cá nhân · 2025</div>
     </div>
   </div>
 
@@ -730,21 +732,25 @@
 <section id="page-finance" class="page active">
   <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
     <div>
-      <h1>My Life · Tài chính cá nhân</h1>
+      <h1>Tài chính Cá nhân</h1>
       <p>Thu nhập · Chi tiêu · Cân đối theo tháng</p>
     </div>
-    <!-- Month/Year Selector -->
-    <div class="month-switcher">
-      <button class="month-nav-btn" onclick="changeFinMonth(-1)" aria-label="Tháng trước">‹</button>
-      <button type="button" class="month-trigger" onclick="openMonthPicker()">
-        <div class="month-trigger-icon">📅</div>
-        <div class="month-trigger-label">
-          <span class="month-trigger-kicker">Kỳ theo dõi</span>
-          <span id="fin-month-label" style="font-weight:800;font-size:15px;min-width:120px;">Tháng 5 / 2025</span>
-          <span class="month-trigger-note">Chạm để mở lịch chọn tháng</span>
+    <!-- Month/Year Selector with Calendar Popup -->
+    <div style="position:relative;">
+      <div class="month-picker-trigger" onclick="toggleMonthPicker(event)">
+        <button onclick="event.stopPropagation();changeFinMonth(-1)" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);padding:0 4px;">‹</button>
+        <span id="fin-month-label" style="font-weight:700;font-size:15px;min-width:120px;text-align:center;">Tháng 5 / 2025</span>
+        <button onclick="event.stopPropagation();changeFinMonth(1)" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-secondary);padding:0 4px;">›</button>
+        <span style="font-size:12px;color:var(--text-muted);">📅</span>
+      </div>
+      <div class="month-picker-popup" id="month-picker-popup">
+        <div class="mpp-header">
+          <button class="mpp-nav" onclick="changeMppYear(-1)">‹</button>
+          <span class="mpp-year" id="mpp-year-label">2025</span>
+          <button class="mpp-nav" onclick="changeMppYear(1)">›</button>
         </div>
-      </button>
-      <button class="month-nav-btn" onclick="changeFinMonth(1)" aria-label="Tháng sau">›</button>
+        <div class="mpp-grid" id="mpp-grid"></div>
+      </div>
     </div>
   </div>
 
@@ -860,12 +866,11 @@
     </div>
   </div>
 
-  <!-- ROW 3: Trung bình 12 tháng theo hạng mục -->
+  <!-- ROW 3: Bình quân năm theo hạng mục -->
   <div class="card">
-    <div class="card-title">Trung bình 12 tháng — Chi tiết theo hạng mục thu nhập</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Tổng thu của từng nguồn được chia đều cho 12 tháng để nhìn tổng quan cả năm, không còn hiển thị phần dự tính thu nhập cả năm.</div>
-    <div class="inv-header desktop-only" style="grid-template-columns:2fr 1fr 1fr 1fr;">
-      <span>Hạng mục</span><span>Loại</span><span>Trung bình / 12 tháng</span><span>Tháng cao nhất</span>
+    <div class="card-title">Bình quân năm — Chi tiết theo hạng mục thu nhập</div>
+    <div class="inv-header" style="grid-template-columns:2fr 1fr 1.2fr 1fr;">
+      <span>Hạng mục</span><span>Loại</span><span>Bình quân / tháng</span><span>Tháng cao nhất</span>
     </div>
     <div id="annual-table"></div>
   </div>
@@ -893,9 +898,11 @@
     <div class="card">
       <div class="card-title">
         Danh mục chứng chỉ quỹ
-        <span class="card-action" onclick="openFundModal()">+ Thêm quỹ</span>
+        <span class="card-action" onclick="openModal('fund-modal')">+ Thêm quỹ</span>
       </div>
-      <div class="fund-toolbar-note">Bạn có thể <strong>Sửa nhanh</strong> trực tiếp từng quỹ để cập nhật <strong>Vốn đầu tư</strong> và <strong>Giá trị TT</strong> mà không cần nhập lại toàn bộ dòng dữ liệu.</div>
+      <div class="inv-header">
+        <span>Tên quỹ</span><span>Vốn đầu tư</span><span>Giá trị TT</span><span>Lãi/lỗ</span>
+      </div>
       <div id="fund-list"></div>
       <div class="divider"></div>
       <div class="summary-row">
@@ -1120,6 +1127,34 @@
 </main>
 </div>
 
+<!-- ════ BOTTOM NAV (mobile only) ════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" onclick="navigate('finance')" data-page="finance">
+    <span class="bn-icon">💰</span>
+    <span class="bn-label">Thu nhập</span>
+  </button>
+  <button class="bn-item" onclick="navigate('investment')" data-page="investment">
+    <span class="bn-icon">📈</span>
+    <span class="bn-label">Đầu tư</span>
+  </button>
+  <button class="bn-item" onclick="navigate('analysis')" data-page="analysis">
+    <span class="bn-icon">🔮</span>
+    <span class="bn-label">Dự báo</span>
+  </button>
+  <button class="bn-item" onclick="navigate('goals')" data-page="goals">
+    <span class="bn-icon">🎯</span>
+    <span class="bn-label">Mục tiêu</span>
+  </button>
+  <button class="bn-item" onclick="navigate('books')" data-page="books">
+    <span class="bn-icon">📚</span>
+    <span class="bn-label">Sách</span>
+  </button>
+  <button class="bn-item" onclick="navigate('workout')" data-page="workout">
+    <span class="bn-icon">🏃</span>
+    <span class="bn-label">Luyện tập</span>
+  </button>
+</nav>
+
 <!-- ════════════════ MODALS ════════════════ -->
 
 <!-- Income Modal -->
@@ -1168,28 +1203,10 @@
   </div>
 </div>
 
-<!-- Month Picker Modal -->
-<div class="modal-overlay" id="month-picker-modal">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-title">Chọn tháng theo dõi</div>
-    <div class="month-helper">Chạm vào tháng bạn muốn xem. Thiết kế này tối ưu cho thao tác trên điện thoại để chọn tháng nhanh hơn thay vì bấm lùi/tới nhiều lần.</div>
-    <div class="month-picker-head">
-      <button class="month-nav-btn" onclick="shiftMonthPickerYear(-1)">‹</button>
-      <div class="month-picker-year" id="month-picker-year">2025</div>
-      <button class="month-nav-btn" onclick="shiftMonthPickerYear(1)">›</button>
-    </div>
-    <div class="month-grid" id="month-picker-grid"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="jumpToCurrentFinMonth()">Tháng hiện tại</button>
-      <button class="btn btn-primary" onclick="closeModal('month-picker-modal')">Đóng</button>
-    </div>
-  </div>
-</div>
-
 <!-- Fund Modal -->
 <div class="modal-overlay" id="fund-modal">
   <div class="modal">
-    <div class="modal-title" id="fund-modal-title">Thêm chứng chỉ quỹ</div>
+    <div class="modal-title">Thêm chứng chỉ quỹ</div>
     <div class="form-group mb-16"><label>Tên quỹ</label><input id="fund-name" placeholder="VD: DCDS, VFMVSF…"></div>
     <div class="form-row">
       <div class="form-group"><label>Vốn đầu tư (đ)</label><input id="fund-capital" type="number" placeholder="50000000"></div>
@@ -1197,7 +1214,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('fund-modal')">Huỷ</button>
-      <button class="btn btn-primary" id="fund-modal-submit" onclick="saveFund()">Lưu quỹ</button>
+      <button class="btn btn-primary" onclick="addFund()">Thêm</button>
     </div>
   </div>
 </div>
@@ -1438,6 +1455,57 @@ function showFbToast(msg) {
   setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; }, 3000);
 }
 
+/* ══════════════════════════════════════════
+   MONTH PICKER POPUP
+══════════════════════════════════════════ */
+let mppYear = new Date().getFullYear();
+
+function toggleMonthPicker(e) {
+  e.stopPropagation();
+  const popup = document.getElementById('month-picker-popup');
+  const isOpen = popup.classList.contains('open');
+  // Close all popups first
+  document.querySelectorAll('.month-picker-popup.open').forEach(p=>p.classList.remove('open'));
+  if(!isOpen) {
+    mppYear = finYear;
+    renderMppGrid();
+    popup.classList.add('open');
+  }
+}
+
+function changeMppYear(dir) {
+  mppYear += dir;
+  renderMppGrid();
+}
+
+function renderMppGrid() {
+  const months_vi = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+  document.getElementById('mpp-year-label').textContent = mppYear;
+  const grid = document.getElementById('mpp-grid');
+  const now = new Date();
+  grid.innerHTML = '';
+  months_vi.forEach((m, i) => {
+    const isSelected = (i+1)===finMonth && mppYear===finYear;
+    const isCurrent = (i+1)===(now.getMonth()+1) && mppYear===now.getFullYear();
+    let cls = 'mpp-month';
+    if(isSelected) cls += ' selected';
+    else if(isCurrent) cls += ' current';
+    grid.innerHTML += `<div class="${cls}" onclick="selectMppMonth(${i+1})">${m}</div>`;
+  });
+}
+
+function selectMppMonth(m) {
+  finMonth = m;
+  finYear = mppYear;
+  document.getElementById('month-picker-popup').classList.remove('open');
+  renderFinance();
+}
+
+// Close month picker when clicking outside
+document.addEventListener('click', function() {
+  document.querySelectorAll('.month-picker-popup.open').forEach(p=>p.classList.remove('open'));
+});
+
 /* ─ Unified saveState — writes localStorage + Firestore ─ */
 function saveState() {
   localStorage.setItem(STATE_KEY, JSON.stringify(state));
@@ -1470,6 +1538,12 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(n => {
     if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+page+"'")) n.classList.add('active');
   });
+  // Sync bottom nav
+  document.querySelectorAll('#bottom-nav .bn-item').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-page') === page);
+  });
+  // Scroll to top on mobile
+  window.scrollTo(0, 0);
   renderAll();
 }
 
@@ -1488,7 +1562,7 @@ function switchTab(group, tab) {
 
 /* ══ MODALS ══ */
 function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); if(id === 'fund-modal') editingFundId = null; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
 });
@@ -1498,8 +1572,6 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 ══════════════════════════════════════════ */
 let finYear = new Date().getFullYear();
 let finMonth = new Date().getMonth() + 1; // 1-12
-let monthPickerYear = finYear;
-let editingFundId = null;
 
 function finKey(y, m) { return `${y}-${String(m).padStart(2,'0')}`; }
 function currentFinKey() { return finKey(finYear, finMonth); }
@@ -1513,44 +1585,6 @@ function changeFinMonth(dir) {
   if(finMonth > 12) { finMonth = 1; finYear++; }
   if(finMonth < 1) { finMonth = 12; finYear--; }
   renderFinance();
-}
-
-function openMonthPicker() {
-  monthPickerYear = finYear;
-  renderMonthPicker();
-  openModal('month-picker-modal');
-}
-
-function shiftMonthPickerYear(dir) {
-  monthPickerYear += dir;
-  renderMonthPicker();
-}
-
-function selectFinMonth(month) {
-  finYear = monthPickerYear;
-  finMonth = month;
-  closeModal('month-picker-modal');
-  renderFinance();
-}
-
-function jumpToCurrentFinMonth() {
-  const now = new Date();
-  finYear = now.getFullYear();
-  finMonth = now.getMonth() + 1;
-  closeModal('month-picker-modal');
-  renderFinance();
-}
-
-function renderMonthPicker() {
-  const months = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-  const grid = document.getElementById('month-picker-grid');
-  if(!grid) return;
-  document.getElementById('month-picker-year').textContent = monthPickerYear;
-  grid.innerHTML = months.map((label, index) => {
-    const month = index + 1;
-    const active = month === finMonth && monthPickerYear === finYear;
-    return `<button type="button" class="month-option ${active ? 'active' : ''}" onclick="selectFinMonth(${month})">${label}</button>`;
-  }).join('');
 }
 
 /* ══ ADD INCOME ══ */
@@ -1608,6 +1642,7 @@ function renderFinance() {
   const months_vi = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   const label = `${months_vi[finMonth]} / ${finYear}`;
   document.getElementById('fin-month-label').textContent = label;
+  if(document.getElementById('mobile-month-label')) document.getElementById('mobile-month-label').textContent = label;
   if(document.getElementById('fin-month-badge')) document.getElementById('fin-month-badge').textContent = label;
   if(document.getElementById('fin-month-badge2')) document.getElementById('fin-month-badge2').textContent = label;
 
@@ -1749,8 +1784,8 @@ function renderBarChart() {
   const nonZero = totals.filter(v=>v>0);
   const high = nonZero.length ? Math.max(...nonZero) : 0;
   const low = nonZero.length ? Math.min(...nonZero) : 0;
+  const avg = nonZero.length ? (nonZero.reduce((a,b)=>a+b,0)/nonZero.length) : 0;
   const sum = totals.reduce((a,b)=>a+b,0);
-  const avg = sum / 12;
 
   document.getElementById('bar-max').textContent = high.toFixed(1) + ' tr';
   document.getElementById('bar-min').textContent = low ? low.toFixed(1) + ' tr' : '—';
@@ -1784,7 +1819,8 @@ function renderAnnualTable() {
   const table = document.getElementById('annual-table');
   table.innerHTML = '';
 
-  const sourceMap = {};
+  // Collect unique income sources across all months of finYear
+  const sourceMap = {}; // name+type -> [amounts per month]
   for(let m=1;m<=12;m++) {
     const md = getMonthData(finKey(finYear,m));
     md.incomes.forEach(inc => {
@@ -1794,139 +1830,102 @@ function renderAnnualTable() {
     });
   }
 
-  const yearlyTotal = Array.from({length:12}, (_, idx) => getMonthData(finKey(finYear, idx + 1)).incomes.reduce((a,i)=>a+i.amount,0)).reduce((a,b)=>a+b,0);
-  const avgAll = yearlyTotal / 12;
-  document.getElementById('kpi-avg').textContent = yearlyTotal > 0 ? fmt(avgAll) : '—';
-  document.getElementById('kpi-avg-note').textContent = yearlyTotal > 0 ? `Tổng thu ${finYear} chia đều cho 12 tháng` : 'Chưa có dữ liệu để tính trung bình';
-
   if(!Object.keys(sourceMap).length) {
-    table.innerHTML = '<div class="text-muted text-sm" style="padding:16px;text-align:center;">Nhập dữ liệu thu nhập để xem trung bình 12 tháng.</div>';
+    table.innerHTML = '<div class="text-muted text-sm" style="padding:16px;text-align:center;">Nhập dữ liệu thu nhập để xem thống kê bình quân.</div>';
+    document.getElementById('kpi-avg').textContent = '—';
+    document.getElementById('kpi-avg-note').textContent = '—';
     return;
   }
 
-  Object.values(sourceMap)
-    .sort((a,b) => b.months.reduce((x,y)=>x+y,0) - a.months.reduce((x,y)=>x+y,0))
-    .forEach(src => {
-      const total = src.months.reduce((a,b)=>a+b,0);
-      const avg = total / 12;
-      const high = Math.max(...src.months);
-      const monthsWithData = src.months.filter(v=>v>0).length;
-      const isActive = src.type === 'active';
-      table.innerHTML += `
-        <div class="inv-row" style="grid-template-columns:2fr 1fr 1fr 1fr;">
-          <div><div class="inv-name">${src.name}</div><div class="inv-sub">${monthsWithData}/12 tháng có dữ liệu</div></div>
-          <div><span class="badge ${isActive?'badge-green':'badge-gold'}">${isActive?'Lương':'Referral'}</span></div>
-          <div class="font-bold">${fmt(avg)}</div>
-          <div style="color:var(--accent3);font-weight:600;">${high > 0 ? fmt(high) : '—'}</div>
-        </div>`;
-    });
+  Object.values(sourceMap).forEach(src => {
+    const nonZero = src.months.filter(v=>v>0);
+    const avg = nonZero.length ? nonZero.reduce((a,b)=>a+b,0)/nonZero.length : 0;
+    const high = nonZero.length ? Math.max(...nonZero) : 0;
+    const isActive = src.type === 'active';
+    table.innerHTML += `
+      <div class="inv-row" style="grid-template-columns:2fr 1fr 1.2fr 1fr;">
+        <div><div class="inv-name">${src.name}</div><div class="inv-sub">${nonZero.length} tháng có dữ liệu</div></div>
+        <div><span class="badge ${isActive?'badge-green':'badge-gold'}">${isActive?'Lương':'Referral'}</span></div>
+        <div class="font-bold">${fmt(avg)}</div>
+        <div style="color:var(--accent3);font-weight:600;">${fmt(high)}</div>
+      </div>`;
+  });
+
+  // Update avg KPI
+  const allMonthTotals = [];
+  for(let m=1;m<=12;m++){
+    const md = getMonthData(finKey(finYear,m));
+    const t = md.incomes.reduce((a,i)=>a+i.amount,0);
+    if(t>0) allMonthTotals.push(t);
+  }
+  const avgAll = allMonthTotals.length ? allMonthTotals.reduce((a,b)=>a+b,0)/allMonthTotals.length : 0;
+  document.getElementById('kpi-avg').textContent = fmt(avgAll);
+  document.getElementById('kpi-avg-note').textContent = `Dựa trên ${allMonthTotals.length}/12 tháng`;
 }
 
 /* ══════════════════════════════════════════
    INVESTMENT
 ══════════════════════════════════════════ */
-function resetFundForm() {
-  document.getElementById('fund-name').value='';
-  document.getElementById('fund-capital').value='';
-  document.getElementById('fund-market').value='';
-}
-
-function openFundModal(id = null) {
-  editingFundId = id;
-  const title = document.getElementById('fund-modal-title');
-  const submit = document.getElementById('fund-modal-submit');
-  if(id) {
-    const fund = state.funds.find(f => f.id === id);
-    if(!fund) return;
-    title.textContent = 'Cập nhật chứng chỉ quỹ';
-    submit.textContent = 'Lưu thay đổi';
-    document.getElementById('fund-name').value = fund.name || '';
-    document.getElementById('fund-capital').value = fund.capital || '';
-    document.getElementById('fund-market').value = fund.market || '';
-  } else {
-    title.textContent = 'Thêm chứng chỉ quỹ';
-    submit.textContent = 'Lưu quỹ';
-    resetFundForm();
-  }
-  openModal('fund-modal');
-}
-
-function saveFund() {
+function addFund() {
   const name = document.getElementById('fund-name').value.trim();
   const capital = parseFloat(document.getElementById('fund-capital').value) || 0;
   const market = parseFloat(document.getElementById('fund-market').value) || 0;
   if(!name) return alert('Nhập tên quỹ');
-
-  if(editingFundId) {
-    state.funds = state.funds.map(f => f.id === editingFundId ? { ...f, name, capital, market } : f);
-  } else {
-    state.funds.push({ id: genId(), name, capital, market });
-  }
-
-  saveState();
-  closeModal('fund-modal');
-  editingFundId = null;
-  resetFundForm();
+  state.funds.push({ id: genId(), name, capital, market });
+  saveState(); closeModal('fund-modal');
+  document.getElementById('fund-name').value=''; document.getElementById('fund-capital').value=''; document.getElementById('fund-market').value='';
   renderFunds();
 }
 
-function deleteFund(id) {
-  state.funds = state.funds.filter(f=>f.id!==id);
-  if(editingFundId === id) editingFundId = null;
-  saveState();
-  renderFunds();
-}
+function deleteFund(id) { state.funds = state.funds.filter(f=>f.id!==id); saveState(); renderFunds(); }
 
 function renderFunds() {
   const list = document.getElementById('fund-list');
   list.innerHTML = '';
   let totalCap = 0, totalMkt = 0;
-
-  if(!state.funds.length) {
-    list.innerHTML = '<div class="text-muted text-sm" style="padding:16px 0;text-align:center;">Chưa có quỹ nào. Nhấn + Thêm quỹ để bắt đầu.</div>';
-    document.getElementById('fund-total').textContent = '—';
-    renderPortSummary();
-    return;
-  }
-
   state.funds.forEach(f => {
-    totalCap += f.capital;
-    totalMkt += f.market;
+    totalCap += f.capital; totalMkt += f.market;
     const diff = f.market - f.capital;
-    const pct = f.capital ? ((diff/f.capital)*100).toFixed(1) : '0.0';
-    const diffLabel = `${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}`;
+    const pct = f.capital ? ((diff/f.capital)*100).toFixed(1) : 0;
     list.innerHTML += `
-      <div class="fund-card">
-        <div class="fund-card-top">
-          <div>
-            <div class="fund-card-name">${f.name}</div>
-            <div class="fund-card-sub">${diff >= 0 ? 'Đang tăng trưởng tích cực' : 'Biến động âm, nên theo dõi thêm'}</div>
-          </div>
-          <span class="badge ${diff>=0?'badge-green':'badge-orange'}">${diff>=0?'+':''}${pct}%</span>
-        </div>
-        <div class="fund-metrics">
-          <div class="metric-chip">
-            <div class="metric-chip-label">Vốn đầu tư</div>
-            <div class="metric-chip-value">${fmt(f.capital)}</div>
-          </div>
-          <div class="metric-chip">
-            <div class="metric-chip-label">Giá trị TT</div>
-            <div class="metric-chip-value">${fmt(f.market)}</div>
-          </div>
-          <div class="metric-chip">
-            <div class="metric-chip-label">Lãi / lỗ</div>
-            <div class="metric-chip-value" style="color:${diff>=0?'var(--accent)':'var(--accent2)'};">${diffLabel}</div>
-          </div>
-        </div>
-        <div class="fund-actions">
-          <button class="action-btn action-btn-primary" onclick="openFundModal('${f.id}')">Sửa nhanh</button>
-          <button class="action-btn action-btn-danger" onclick="deleteFund('${f.id}')">Xoá dòng</button>
+      <div class="inv-row" id="fund-row-${f.id}">
+        <div><div class="inv-name">${f.name}</div></div>
+        <div id="fund-cap-cell-${f.id}">${fmt(f.capital)}</div>
+        <div id="fund-mkt-cell-${f.id}">${fmt(f.market)}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="${diff>=0?'positive':'negative'}">${diff>=0?'+':''}${pct}%</span>
+          <button class="edit-btn" onclick="startEditFund('${f.id}')">✏️ Sửa</button>
+          <button class="delete-btn" onclick="deleteFund('${f.id}')">✕</button>
         </div>
       </div>`;
   });
-
+  if(!state.funds.length) list.innerHTML = '<div class="text-muted text-sm" style="padding:12px 0;text-align:center;">Chưa có quỹ. Nhấn + Thêm quỹ.</div>';
   document.getElementById('fund-total').textContent = fmt(totalMkt);
   renderPortSummary();
+}
+
+function startEditFund(id) {
+  const f = state.funds.find(f=>f.id===id);
+  if(!f) return;
+  const row = document.getElementById('fund-row-'+id);
+  row.classList.add('editing');
+  document.getElementById('fund-cap-cell-'+id).innerHTML =
+    `<input class="fund-edit-input" id="fedit-cap-${id}" type="number" value="${f.capital}" placeholder="Vốn đầu tư">`;
+  document.getElementById('fund-mkt-cell-'+id).innerHTML =
+    `<input class="fund-edit-input" id="fedit-mkt-${id}" type="number" value="${f.market}" placeholder="Giá trị TT">`;
+  // Replace edit button with save button
+  row.querySelector('.edit-btn').outerHTML = `<button class="edit-btn save-btn" onclick="saveEditFund('${id}')">💾 Lưu</button>`;
+}
+
+function saveEditFund(id) {
+  const f = state.funds.find(f=>f.id===id);
+  if(!f) return;
+  const newCap = parseFloat(document.getElementById('fedit-cap-'+id).value);
+  const newMkt = parseFloat(document.getElementById('fedit-mkt-'+id).value);
+  if(!isNaN(newCap)) f.capital = newCap;
+  if(!isNaN(newMkt)) f.market = newMkt;
+  saveState();
+  renderFunds();
 }
 
 function addSaving() {
@@ -2390,6 +2389,5 @@ if (hasConfig && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY') {
   </div>
 </div>
 
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
