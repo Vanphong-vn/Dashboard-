@@ -719,13 +719,12 @@
   <!-- Firebase Panel -->
   <div class="fb-panel">
     <div class="fb-panel-title">☁️ Firebase Sync</div>
-    <div id="fb-status">— Chưa kết nối</div>
+    <div id="fb-status">— Đang kết nối…</div>
     <button class="fb-btn fb-btn-signin"  id="btn-signin"  onclick="fbSignIn()"   style="display:none;">🔐 Đăng nhập Google</button>
     <button class="fb-btn fb-btn-signout" id="btn-signout" onclick="fbSignOut()"  style="display:none;">Đăng xuất</button>
     <button class="fb-btn fb-btn-save"    id="btn-save"    onclick="saveToFirestore()" style="display:none;">☁️ Lưu ngay</button>
     <button class="fb-btn fb-btn-load"    id="btn-load"    onclick="loadFromFirestore()" style="display:none;">🔄 Tải lại</button>
-    <button class="fb-btn" onclick="openModal('fb-config-modal')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--text-secondary);margin-top:6px;">⚙️ Cài đặt config</button>
-    <div id="fb-config-hint">⚠️ Chưa điền Firebase config. Nhấn "Cài đặt config".</div>
+    <div id="fb-config-hint" style="display:none;"></div>
   </div>
 
   <div class="sidebar-footer">
@@ -1024,47 +1023,76 @@
      PAGE: GOALS
 ══════════════════════════════════════════ -->
 <section id="page-goals" class="page">
-  <div class="page-header">
-    <h1>Mục tiêu năm 2025</h1>
-    <p>Theo dõi tiến độ các mục tiêu tháng & năm</p>
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Mục tiêu</h1>
+      <p>Theo dõi tiến độ mục tiêu theo tháng & năm</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="changeGoalYear(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:16px;">‹</button>
+      <span id="goal-year-label" style="font-size:16px;font-weight:800;min-width:52px;text-align:center;"></span>
+      <button onclick="changeGoalYear(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:16px;">›</button>
+      <button class="btn btn-primary btn-sm" onclick="openGoalModal()">+ Thêm mục tiêu</button>
+    </div>
+  </div>
+
+  <!-- View tabs: Năm / Tháng -->
+  <div class="tabs" style="margin-bottom:20px;">
+    <div class="tab active" id="goal-tab-year" onclick="switchGoalView('year')">🎯 Mục tiêu Năm</div>
+    <div class="tab" id="goal-tab-month" onclick="switchGoalView('month')">📅 Mục tiêu Tháng</div>
+  </div>
+
+  <!-- Month selector (hidden when year view) -->
+  <div id="goal-month-row" style="display:none;margin-bottom:16px;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="goal-month-chips"></div>
   </div>
 
   <div class="grid-2">
-    <div class="card">
-      <div class="card-title">
-        Mục tiêu đang theo dõi
-        <span class="card-action" onclick="openModal('goal-modal')">+ Thêm</span>
+    <div class="card" style="grid-column:span 2;" id="goal-list-card">
+      <div class="card-title" id="goal-list-title">
+        Mục tiêu năm
+        <span class="card-action" id="goal-list-sub"></span>
       </div>
       <div id="goal-list"></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Tổng quan</div>
-      <div id="goal-summary"></div>
-    </div>
   </div>
+
+  <!-- Summary row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;" id="goal-summary-grid"></div>
 </section>
 
 <!-- ══════════════════════════════════════════
      PAGE: BOOKS
 ══════════════════════════════════════════ -->
 <section id="page-books" class="page">
-  <div class="page-header">
-    <h1>Tủ sách cá nhân</h1>
-    <p>Ghi chú & tra cứu sách đã đọc</p>
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Tủ sách cá nhân</h1>
+      <p>Ghi chú & tra cứu sách theo tháng / năm</p>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">+ Thêm sách</button>
   </div>
 
+  <!-- Stats chips -->
   <div class="flex gap-8 mb-16" style="flex-wrap:wrap;">
     <div class="info-chip">📖 <span id="book-count-reading">0</span> đang đọc</div>
     <div class="info-chip">✅ <span id="book-count-done">0</span> đã đọc</div>
     <div class="info-chip">📚 <span id="book-count-all">0</span> tổng</div>
-    <button class="btn btn-primary btn-sm" onclick="openModal('book-modal')">+ Thêm sách</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="filterBooks('all')">Tất cả</div>
-    <div class="tab" onclick="filterBooks('reading')">Đang đọc</div>
-    <div class="tab" onclick="filterBooks('done')">Đã đọc</div>
+  <!-- Year + filter row -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button onclick="changeBookYear(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:15px;">‹</button>
+      <span id="book-year-label" style="font-size:15px;font-weight:800;min-width:50px;text-align:center;"></span>
+      <button onclick="changeBookYear(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:15px;">›</button>
+    </div>
+    <div class="tabs" style="margin-bottom:0;">
+      <div class="tab active" onclick="filterBooks('all')">Tất cả</div>
+      <div class="tab" onclick="filterBooks('reading')">Đang đọc</div>
+      <div class="tab" onclick="filterBooks('done')">Đã đọc</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="book-month-chips"></div>
   </div>
 
   <div class="card">
@@ -1295,21 +1323,35 @@
 <!-- Goal Modal -->
 <div class="modal-overlay" id="goal-modal">
   <div class="modal">
-    <div class="modal-title">Thêm mục tiêu</div>
-    <div class="form-group mb-16"><label>Tên mục tiêu</label><input id="goal-name" placeholder="VD: Đọc 12 cuốn sách"></div>
+    <div class="modal-title" id="goal-modal-title">Thêm mục tiêu</div>
+    <input type="hidden" id="goal-edit-id" value="">
+    <div class="form-group mb-16"><label>Tên mục tiêu</label><input id="goal-name" placeholder="VD: Đọc 12 cuốn sách, Tích luỹ 100tr…"></div>
     <div class="form-row">
       <div class="form-group"><label>Tiến độ (%)</label><input id="goal-pct" type="number" min="0" max="100" placeholder="0"></div>
       <div class="form-group"><label>Loại</label>
-        <select id="goal-type">
-          <option value="year">Mục tiêu năm</option>
-          <option value="month">Mục tiêu tháng</option>
+        <select id="goal-type" onchange="toggleGoalMonth()">
+          <option value="year">🎯 Mục tiêu Năm</option>
+          <option value="month">📅 Mục tiêu Tháng</option>
         </select>
       </div>
     </div>
-    <div class="form-group mb-16"><label>Ghi chú</label><textarea id="goal-note" placeholder="Chi tiết, deadline…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Năm</label>
+        <select id="goal-year-sel"></select>
+      </div>
+      <div class="form-group" id="goal-month-sel-wrap"><label>Tháng</label>
+        <select id="goal-month-sel">
+          <option value="1">Tháng 1</option><option value="2">Tháng 2</option><option value="3">Tháng 3</option>
+          <option value="4">Tháng 4</option><option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+          <option value="7">Tháng 7</option><option value="8">Tháng 8</option><option value="9">Tháng 9</option>
+          <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group mb-16"><label>Ghi chú / Deadline</label><textarea id="goal-note" placeholder="Chi tiết, deadline, cách đo…"></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('goal-modal')">Huỷ</button>
-      <button class="btn btn-primary" onclick="addGoal()">Thêm</button>
+      <button class="btn btn-primary" id="goal-modal-btn" onclick="saveGoal()">Thêm</button>
     </div>
   </div>
 </div>
@@ -1317,7 +1359,8 @@
 <!-- Book Modal -->
 <div class="modal-overlay" id="book-modal">
   <div class="modal">
-    <div class="modal-title">Thêm sách</div>
+    <div class="modal-title" id="book-modal-title">Thêm sách</div>
+    <input type="hidden" id="book-edit-id" value="">
     <div class="form-row">
       <div class="form-group"><label>Tên sách</label><input id="book-title" placeholder="Tên sách…"></div>
       <div class="form-group"><label>Tác giả</label><input id="book-author" placeholder="Tác giả…"></div>
@@ -1325,8 +1368,8 @@
     <div class="form-row">
       <div class="form-group"><label>Trạng thái</label>
         <select id="book-status">
-          <option value="reading">Đang đọc</option>
-          <option value="done">Đã đọc</option>
+          <option value="reading">📖 Đang đọc</option>
+          <option value="done">✅ Đã đọc</option>
         </select>
       </div>
       <div class="form-group"><label>Màu bìa</label>
@@ -1340,10 +1383,22 @@
         </select>
       </div>
     </div>
-    <div class="form-group mb-16"><label>Ghi chú / Cảm nhận chính</label><textarea id="book-note" placeholder="Key takeaway, câu đáng nhớ…"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Năm đọc</label><select id="book-year"></select></div>
+      <div class="form-group"><label>Tháng đọc</label>
+        <select id="book-month">
+          <option value="0">— Không rõ</option>
+          <option value="1">Tháng 1</option><option value="2">Tháng 2</option><option value="3">Tháng 3</option>
+          <option value="4">Tháng 4</option><option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+          <option value="7">Tháng 7</option><option value="8">Tháng 8</option><option value="9">Tháng 9</option>
+          <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group mb-16"><label>Ghi chú / Cảm nhận chính</label><textarea id="book-note" placeholder="Key takeaway, câu đáng nhớ…" style="min-height:90px;"></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('book-modal')">Huỷ</button>
-      <button class="btn btn-primary" onclick="addBook()">Thêm</button>
+      <button class="btn btn-primary" id="book-modal-btn" onclick="saveBook()">Thêm</button>
     </div>
   </div>
 </div>
@@ -1355,12 +1410,14 @@
 const STATE_KEY = 'personal_dashboard_v1';
 
 let state = {
-  // monthData: { "2025-05": { incomes:[{id,name,amount,type}], expenses:[{id,name,amount,cat}] } }
+  // monthData: { "2026-05": { incomes:[{id,name,amount,type}], expenses:[{id,name,amount,cat}] } }
   monthData: {},
   funds: [],
   savings: [],
   insurances: [],
-  goals: [],
+  // goals: { "2026": [{id,name,pct,type,month,note}], "2025": [...] }
+  goals: {},
+  // books: [{id,title,author,status,color,note,year,month}]
   books: [],
   workouts: {}
 };
@@ -1373,14 +1430,14 @@ let state = {
      Firebase Console before deploying.
 ══════════════════════════════════════════ */
 
-// ── Your Firebase config (paste from Firebase Console → Project Settings) ──
+// ── Firebase config ──
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyA9ct-ElzylSryMJQDGhkR-Wulgenh4Wr4",
+  authDomain:        "dashboard-866f0.firebaseapp.com",
+  projectId:         "dashboard-866f0",
+  storageBucket:     "dashboard-866f0.firebasestorage.app",
+  messagingSenderId: "1088062772955",
+  appId:             "1:1088062772955:web:1cef0968425cebff915efe"
 };
 
 // ── Firestore document path: users/{uid}/dashboard/data ──
@@ -1559,7 +1616,23 @@ function saveState() {
 function loadState() {
   const raw = localStorage.getItem(STATE_KEY);
   if (raw) {
-    try { state = { ...state, ...JSON.parse(raw) }; } catch(e) {}
+    try {
+      const saved = JSON.parse(raw);
+      // Migrate old goals array → object keyed by year
+      if(Array.isArray(saved.goals)) {
+        const yr = String(new Date().getFullYear());
+        saved.goals = { [yr]: saved.goals };
+      }
+      // Migrate old books without year/month
+      if(Array.isArray(saved.books)) {
+        saved.books = saved.books.map(b => ({
+          year: new Date().getFullYear(),
+          month: 0,
+          ...b
+        }));
+      }
+      state = { ...state, ...saved };
+    } catch(e) {}
   }
 }
 
@@ -2085,124 +2158,334 @@ function runSimulation() {
 }
 
 /* ══════════════════════════════════════════
-   GOALS
+   GOALS — year-based, month-based, editable
 ══════════════════════════════════════════ */
-function addGoal() {
-  const name = document.getElementById('goal-name').value.trim();
-  const pct = Math.min(100, Math.max(0, parseInt(document.getElementById('goal-pct').value)||0));
-  const type = document.getElementById('goal-type').value;
-  const note = document.getElementById('goal-note').value.trim();
-  if(!name) return alert('Nhập tên mục tiêu');
-  state.goals.push({ id: genId(), name, pct, type, note });
-  saveState(); closeModal('goal-modal');
-  document.getElementById('goal-name').value=''; document.getElementById('goal-pct').value=''; document.getElementById('goal-note').value='';
+let goalYear = new Date().getFullYear();
+let goalView = 'year'; // 'year' | 'month'
+let goalMonth = new Date().getMonth() + 1;
+
+function changeGoalYear(dir) {
+  goalYear += dir;
   renderGoals();
 }
 
-function deleteGoal(id) { state.goals = state.goals.filter(g=>g.id!==id); saveState(); renderGoals(); }
-function updateGoalPct(id, val) {
-  const g = state.goals.find(g=>g.id===id);
-  if(g) { g.pct = parseInt(val); saveState(); renderGoals(); }
+function switchGoalView(v) {
+  goalView = v;
+  document.getElementById('goal-tab-year').classList.toggle('active', v==='year');
+  document.getElementById('goal-tab-month').classList.toggle('active', v==='month');
+  renderGoals();
+}
+
+function openGoalModal(editId) {
+  // Populate year selector
+  const yearSel = document.getElementById('goal-year-sel');
+  yearSel.innerHTML = '';
+  const now = new Date().getFullYear();
+  for(let y = now+1; y >= now-3; y--) {
+    yearSel.innerHTML += `<option value="${y}" ${y===goalYear?'selected':''}>${y}</option>`;
+  }
+  // Populate month sel default to current
+  document.getElementById('goal-month-sel').value = goalMonth;
+  document.getElementById('goal-type').value = goalView === 'month' ? 'month' : 'year';
+  toggleGoalMonth();
+
+  if(editId) {
+    const yr = String(goalYear);
+    const g = (state.goals[yr]||[]).find(g=>g.id===editId);
+    if(!g) return;
+    document.getElementById('goal-modal-title').textContent = 'Chỉnh sửa mục tiêu';
+    document.getElementById('goal-modal-btn').textContent = 'Lưu';
+    document.getElementById('goal-edit-id').value = editId;
+    document.getElementById('goal-name').value = g.name;
+    document.getElementById('goal-pct').value = g.pct;
+    document.getElementById('goal-type').value = g.type;
+    document.getElementById('goal-year-sel').value = yr;
+    document.getElementById('goal-month-sel').value = g.month || goalMonth;
+    document.getElementById('goal-note').value = g.note || '';
+    toggleGoalMonth();
+  } else {
+    document.getElementById('goal-modal-title').textContent = 'Thêm mục tiêu';
+    document.getElementById('goal-modal-btn').textContent = 'Thêm';
+    document.getElementById('goal-edit-id').value = '';
+    document.getElementById('goal-name').value = '';
+    document.getElementById('goal-pct').value = '';
+    document.getElementById('goal-note').value = '';
+  }
+  openModal('goal-modal');
+}
+
+function toggleGoalMonth() {
+  const isMonth = document.getElementById('goal-type').value === 'month';
+  document.getElementById('goal-month-sel-wrap').style.display = isMonth ? '' : 'none';
+}
+
+function saveGoal() {
+  const name = document.getElementById('goal-name').value.trim();
+  const pct  = Math.min(100, Math.max(0, parseInt(document.getElementById('goal-pct').value)||0));
+  const type = document.getElementById('goal-type').value;
+  const yr   = document.getElementById('goal-year-sel').value;
+  const month= parseInt(document.getElementById('goal-month-sel').value);
+  const note = document.getElementById('goal-note').value.trim();
+  const editId = document.getElementById('goal-edit-id').value;
+  if(!name) return alert('Nhập tên mục tiêu');
+
+  if(!state.goals[yr]) state.goals[yr] = [];
+
+  if(editId) {
+    // find and update in any year key (might have moved year)
+    // remove from old, add to new
+    for(const k of Object.keys(state.goals)) {
+      const idx = state.goals[k].findIndex(g=>g.id===editId);
+      if(idx !== -1) { state.goals[k].splice(idx,1); break; }
+    }
+    state.goals[yr].push({ id: editId, name, pct, type, month, note });
+  } else {
+    state.goals[yr].push({ id: genId(), name, pct, type, month, note });
+  }
+
+  saveState(); closeModal('goal-modal');
+  goalYear = parseInt(yr);
+  renderGoals();
+}
+
+function deleteGoal(yr, id) {
+  if(!state.goals[yr]) return;
+  state.goals[yr] = state.goals[yr].filter(g=>g.id!==id);
+  saveState(); renderGoals();
+}
+
+function updateGoalPct(yr, id, val) {
+  const g = (state.goals[yr]||[]).find(g=>g.id===id);
+  if(g) { g.pct = parseInt(val); saveState(); }
+  // update display inline without full re-render
+  const pctEl = document.getElementById('gpct-'+id);
+  const barEl = document.getElementById('gbar-'+id);
+  if(pctEl) pctEl.textContent = val + '%';
+  if(barEl) barEl.style.width = val + '%';
 }
 
 function renderGoals() {
-  const list = document.getElementById('goal-list');
-  list.innerHTML = '';
+  document.getElementById('goal-year-label').textContent = goalYear;
+  const yr = String(goalYear);
+  const allGoals = state.goals[yr] || [];
+
+  // Month chips (for month view)
+  const monthRow = document.getElementById('goal-month-row');
+
+  let goals;
+  if(goalView === 'year') {
+    goals = allGoals.filter(g => g.type === 'year');
+    document.getElementById('goal-list-title').innerHTML = `Mục tiêu năm ${goalYear} <span style="color:var(--text-muted);font-weight:400;font-size:12px;">${goals.length} mục tiêu</span>`;
+    monthRow.style.display = 'none';
+  } else {
+    // Month view: show month chips
+    monthRow.style.display = '';
+    const months_vi = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+    document.getElementById('goal-month-chips').innerHTML = months_vi.map((m,i) => {
+      const hasGoals = allGoals.filter(g=>g.type==='month'&&g.month===(i+1)).length > 0;
+      const isActive = goalMonth === (i+1);
+      return `<div onclick="selectGoalMonth(${i+1})" style="padding:4px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;border:1.5px solid ${isActive?'var(--accent)':hasGoals?'var(--border)':'transparent'};background:${isActive?'var(--accent)':hasGoals?'var(--surface)':'var(--surface2)'};color:${isActive?'white':hasGoals?'var(--text-primary)':'var(--text-muted)'};transition:all 0.15s;">${m}${hasGoals?'·':''}</div>`;
+    }).join('');
+    goals = allGoals.filter(g => g.type === 'month' && g.month === goalMonth);
+    const months_full = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+    document.getElementById('goal-list-title').innerHTML = `Mục tiêu ${months_full[goalMonth]} / ${goalYear} <span style="color:var(--text-muted);font-weight:400;font-size:12px;">${goals.length} mục tiêu</span>`;
+  }
+
   const colors = ['progress-green','progress-blue','progress-orange','progress-gold'];
-  state.goals.forEach((g, i) => {
-    const colorCls = colors[i % colors.length];
-    list.innerHTML += `
-      <div class="goal-item">
+  const list = document.getElementById('goal-list');
+  if(!goals.length) {
+    list.innerHTML = `<div class="text-muted text-sm" style="padding:24px;text-align:center;">Chưa có mục tiêu nào.<br><span style="font-size:11px;">Nhấn "+ Thêm mục tiêu" để bắt đầu.</span></div>`;
+  } else {
+    list.innerHTML = goals.map((g, i) => {
+      const colorCls = colors[i % colors.length];
+      return `<div class="goal-item">
         <div class="goal-top">
-          <div class="goal-name">${g.name} <span class="badge ${g.type==='year'?'badge-blue':'badge-orange'}" style="margin-left:6px;">${g.type==='year'?'Năm':'Tháng'}</span></div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="goal-pct" style="color:var(--accent);">${g.pct}%</span>
-            <button class="delete-btn" onclick="deleteGoal('${g.id}')">✕</button>
+          <div class="goal-name">${g.name}</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="goal-pct" id="gpct-${g.id}" style="color:var(--accent);">${g.pct}%</span>
+            <button onclick="openGoalModal('${g.id}')" style="background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:11px;padding:3px 8px;transition:all 0.12s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">✏️ Sửa</button>
+            <button class="delete-btn" onclick="deleteGoal('${yr}','${g.id}')">✕</button>
           </div>
         </div>
         ${g.note ? `<div class="goal-meta" style="margin-bottom:6px;">${g.note}</div>` : ''}
-        <div class="progress-bar"><div class="progress-fill ${colorCls}" style="width:${g.pct}%"></div></div>
+        <div class="progress-bar"><div class="progress-fill ${colorCls}" id="gbar-${g.id}" style="width:${g.pct}%"></div></div>
         <div style="margin-top:8px;">
-          <input type="range" min="0" max="100" value="${g.pct}" style="width:100%;accent-color:var(--accent);" oninput="updateGoalPct('${g.id}',this.value)">
+          <input type="range" min="0" max="100" value="${g.pct}" style="width:100%;accent-color:var(--accent);" oninput="updateGoalPct('${yr}','${g.id}',this.value)" onchange="saveState()">
         </div>
       </div>`;
-  });
+    }).join('');
+  }
 
-  const done = state.goals.filter(g=>g.pct>=100).length;
-  const inprog = state.goals.filter(g=>g.pct>0&&g.pct<100).length;
-  const todo = state.goals.filter(g=>g.pct===0).length;
-  const avgPct = state.goals.length ? Math.round(state.goals.reduce((a,g)=>a+g.pct,0)/state.goals.length) : 0;
-  document.getElementById('goal-summary').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div style="text-align:center;padding:16px;background:var(--accent-light);border-radius:var(--radius-sm);">
-        <div style="font-size:28px;font-weight:800;color:var(--accent);">${done}</div>
-        <div class="text-sm text-muted">Hoàn thành</div>
-      </div>
-      <div style="text-align:center;padding:16px;background:var(--gold-light);border-radius:var(--radius-sm);">
-        <div style="font-size:28px;font-weight:800;color:var(--gold);">${inprog}</div>
-        <div class="text-sm text-muted">Đang thực hiện</div>
-      </div>
-      <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);">
-        <div style="font-size:28px;font-weight:800;color:var(--text-secondary);">${todo}</div>
-        <div class="text-sm text-muted">Chưa bắt đầu</div>
-      </div>
-      <div style="text-align:center;padding:16px;background:var(--accent3-light);border-radius:var(--radius-sm);">
-        <div style="font-size:28px;font-weight:800;color:var(--accent3);">${avgPct}%</div>
-        <div class="text-sm text-muted">Trung bình</div>
-      </div>
-    </div>
-    <div class="progress-bar" style="height:10px;"><div class="progress-fill progress-green" style="width:${avgPct}%"></div></div>
-    <div class="text-sm text-muted mt-4" style="text-align:center;">Tiến độ tổng thể</div>`;
+  // Summary grid
+  const done  = goals.filter(g=>g.pct>=100).length;
+  const inprog= goals.filter(g=>g.pct>0&&g.pct<100).length;
+  const todo  = goals.filter(g=>g.pct===0).length;
+  const avg   = goals.length ? Math.round(goals.reduce((a,g)=>a+g.pct,0)/goals.length) : 0;
+  document.getElementById('goal-summary-grid').innerHTML = [
+    { val: done,   label:'Hoàn thành', bg:'var(--accent-light)',  color:'var(--accent)' },
+    { val: inprog, label:'Đang thực hiện', bg:'var(--gold-light)', color:'var(--gold)' },
+    { val: todo,   label:'Chưa bắt đầu',  bg:'var(--surface2)',   color:'var(--text-secondary)' },
+    { val: avg+'%',label:'Tiến độ TB',    bg:'var(--accent3-light)',color:'var(--accent3)' },
+  ].map(s=>`<div class="card" style="padding:16px;text-align:center;background:${s.bg};border:none;">
+    <div style="font-size:26px;font-weight:800;color:${s.color};letter-spacing:-1px;">${s.val}</div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">${s.label}</div>
+  </div>`).join('');
+}
+
+function selectGoalMonth(m) {
+  goalMonth = m;
+  renderGoals();
 }
 
 /* ══════════════════════════════════════════
-   BOOKS
+   BOOKS — year/month tracking, update note
 ══════════════════════════════════════════ */
 let bookFilter = 'all';
+let bookYear = new Date().getFullYear();
+let bookMonth = 0; // 0 = all months
 
-function addBook() {
-  const title = document.getElementById('book-title').value.trim();
-  const author = document.getElementById('book-author').value.trim();
-  const status = document.getElementById('book-status').value;
-  const color = document.getElementById('book-color').value;
-  const note = document.getElementById('book-note').value.trim();
-  if(!title) return alert('Nhập tên sách');
-  state.books.push({ id: genId(), title, author, status, color, note });
-  saveState(); closeModal('book-modal');
-  ['book-title','book-author','book-note'].forEach(id => document.getElementById(id).value='');
+function changeBookYear(dir) {
+  bookYear += dir;
+  bookMonth = 0;
+  document.getElementById('book-year-label').textContent = bookYear;
   renderBooks();
 }
 
-function deleteBook(id) { state.books = state.books.filter(b=>b.id!==id); saveState(); renderBooks(); }
+function selectBookMonth(m) {
+  bookMonth = (bookMonth === m) ? 0 : m; // toggle
+  renderBooks();
+}
+
 function filterBooks(f) {
   bookFilter = f;
   document.querySelectorAll('#page-books .tab').forEach((t,i) => t.classList.toggle('active', ['all','reading','done'][i]===f));
   renderBooks();
 }
 
+function openBookModal(editId) {
+  // Populate year selector
+  const bookYearSel = document.getElementById('book-year');
+  bookYearSel.innerHTML = '';
+  const now = new Date().getFullYear();
+  for(let y = now+1; y >= now-5; y--) {
+    bookYearSel.innerHTML += `<option value="${y}" ${y===bookYear?'selected':''}>${y}</option>`;
+  }
+  document.getElementById('book-month').value = new Date().getMonth()+1;
+
+  if(editId) {
+    const b = state.books.find(b=>b.id===editId);
+    if(!b) return;
+    document.getElementById('book-modal-title').textContent = 'Chỉnh sửa sách';
+    document.getElementById('book-modal-btn').textContent = 'Lưu';
+    document.getElementById('book-edit-id').value = editId;
+    document.getElementById('book-title').value  = b.title;
+    document.getElementById('book-author').value = b.author||'';
+    document.getElementById('book-status').value = b.status;
+    document.getElementById('book-color').value  = b.color||'#2D6A4F';
+    document.getElementById('book-year').value   = b.year||now;
+    document.getElementById('book-month').value  = b.month||0;
+    document.getElementById('book-note').value   = b.note||'';
+  } else {
+    document.getElementById('book-modal-title').textContent = 'Thêm sách';
+    document.getElementById('book-modal-btn').textContent = 'Thêm';
+    document.getElementById('book-edit-id').value = '';
+    ['book-title','book-author','book-note'].forEach(id=>document.getElementById(id).value='');
+  }
+  openModal('book-modal');
+}
+
+function saveBook() {
+  const title  = document.getElementById('book-title').value.trim();
+  const author = document.getElementById('book-author').value.trim();
+  const status = document.getElementById('book-status').value;
+  const color  = document.getElementById('book-color').value;
+  const year   = parseInt(document.getElementById('book-year').value);
+  const month  = parseInt(document.getElementById('book-month').value);
+  const note   = document.getElementById('book-note').value.trim();
+  const editId = document.getElementById('book-edit-id').value;
+  if(!title) return alert('Nhập tên sách');
+
+  if(editId) {
+    const b = state.books.find(b=>b.id===editId);
+    if(b) Object.assign(b, { title, author, status, color, year, month, note });
+  } else {
+    state.books.push({ id: genId(), title, author, status, color, year, month, note });
+  }
+  saveState(); closeModal('book-modal');
+  renderBooks();
+}
+
+function deleteBook(id) { state.books = state.books.filter(b=>b.id!==id); saveState(); renderBooks(); }
+
 function renderBooks() {
+  const now = new Date().getFullYear();
+  document.getElementById('book-year-label').textContent = bookYear;
+
+  // Month chips
+  const months_vi = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+  const booksThisYear = state.books.filter(b=>(b.year||now)===bookYear);
+  document.getElementById('book-month-chips').innerHTML =
+    `<div onclick="selectBookMonth(0)" style="padding:4px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;border:1.5px solid ${bookMonth===0?'var(--accent)':'transparent'};background:${bookMonth===0?'var(--accent)':'var(--surface2)'};color:${bookMonth===0?'white':'var(--text-muted)'};transition:all 0.15s;">Cả năm</div>` +
+    months_vi.map((m,i) => {
+      const cnt = booksThisYear.filter(b=>(b.month||0)===(i+1)).length;
+      const active = bookMonth === (i+1);
+      return `<div onclick="selectBookMonth(${i+1})" style="padding:4px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;border:1.5px solid ${active?'var(--accent)':cnt>0?'var(--border)':'transparent'};background:${active?'var(--accent)':cnt>0?'var(--surface)':'var(--surface2)'};color:${active?'white':cnt>0?'var(--text-primary)':'var(--text-muted)'};transition:all 0.15s;">${m}${cnt>0?` (${cnt})`:''}</div>`;
+    }).join('');
+
+  let filtered = state.books.filter(b => (b.year||now) === bookYear);
+  if(bookMonth > 0) filtered = filtered.filter(b=>(b.month||0)===bookMonth);
+  if(bookFilter !== 'all') filtered = filtered.filter(b=>b.status===bookFilter);
+
+  const months_full = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
   const list = document.getElementById('book-list');
-  const filtered = bookFilter==='all' ? state.books : state.books.filter(b=>b.status===bookFilter);
-  list.innerHTML = filtered.length ? '' : '<div class="text-muted text-sm" style="padding:20px;text-align:center;">Chưa có sách nào.</div>';
+  list.innerHTML = filtered.length ? '' : '<div class="text-muted text-sm" style="padding:24px;text-align:center;">Chưa có sách nào trong khoảng thời gian này.</div>';
   filtered.forEach(b => {
     const letter = b.title.charAt(0).toUpperCase();
+    const monthLabel = b.month > 0 ? months_full[b.month] : '';
     list.innerHTML += `
       <div class="book-item">
-        <div class="book-cover" style="background:${b.color};">${letter}</div>
+        <div class="book-cover" style="background:${b.color||'#2D6A4F'};">${letter}</div>
         <div class="book-info">
           <div class="book-title">${b.title}</div>
-          <div class="book-author">${b.author || '—'}</div>
-          ${b.note ? `<div class="book-note">💡 ${b.note}</div>` : ''}
+          <div class="book-author">${b.author||'—'}${monthLabel?` · <span style="color:var(--accent);font-weight:600;">${monthLabel} ${b.year||now}</span>`:` · ${b.year||now}`}</div>
+          <div id="book-note-display-${b.id}" style="margin-top:4px;">
+            ${b.note ? `<div class="book-note" style="cursor:pointer;" onclick="toggleBookNoteEdit('${b.id}')">💡 ${b.note} <span style="font-size:10px;color:var(--accent);margin-left:4px;">[sửa]</span></div>` : `<div style="font-size:12px;color:var(--text-muted);cursor:pointer;" onclick="toggleBookNoteEdit('${b.id}')">+ Thêm ghi chú</div>`}
+          </div>
+          <div id="book-note-edit-${b.id}" style="display:none;margin-top:6px;">
+            <textarea id="book-note-input-${b.id}" style="width:100%;padding:7px 10px;border:1.5px solid var(--accent);border-radius:8px;font-family:inherit;font-size:12px;resize:vertical;min-height:60px;">${b.note||''}</textarea>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button onclick="saveBookNote('${b.id}')" class="btn btn-primary btn-sm">💾 Lưu</button>
+              <button onclick="toggleBookNoteEdit('${b.id}')" class="btn btn-ghost btn-sm">Huỷ</button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
           <span class="book-status ${b.status==='done'?'status-done':'status-reading'}">${b.status==='done'?'✅ Đã đọc':'📖 Đang đọc'}</span>
+          <button onclick="openBookModal('${b.id}')" style="background:none;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;color:var(--text-muted);padding:3px 8px;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">✏️ Sửa</button>
           <button class="delete-btn" onclick="deleteBook('${b.id}')">✕</button>
         </div>
       </div>`;
   });
+
   document.getElementById('book-count-all').textContent = state.books.length;
   document.getElementById('book-count-reading').textContent = state.books.filter(b=>b.status==='reading').length;
   document.getElementById('book-count-done').textContent = state.books.filter(b=>b.status==='done').length;
+}
+
+function toggleBookNoteEdit(id) {
+  const disp = document.getElementById('book-note-display-'+id);
+  const edit = document.getElementById('book-note-edit-'+id);
+  const isEditing = edit.style.display !== 'none';
+  disp.style.display = isEditing ? '' : 'none';
+  edit.style.display = isEditing ? 'none' : '';
+}
+
+function saveBookNote(id) {
+  const b = state.books.find(b=>b.id===id);
+  if(!b) return;
+  b.note = document.getElementById('book-note-input-'+id).value.trim();
+  saveState();
+  renderBooks();
 }
 
 /* ══════════════════════════════════════════
@@ -2387,71 +2670,22 @@ function updateFbButtons(loggedIn) {
 
 // Override setFbStatus to also toggle buttons
 const _origSetFbStatus = setFbStatus;
-function setFbStatus(state, text) {
-  _origSetFbStatus(state, text);
-  updateFbButtons(state === 'connected');
+function setFbStatus(st, text) {
+  _origSetFbStatus(st, text);
+  updateFbButtons(st === 'connected');
 }
 
 /* ══ INIT ══ */
 loadState();
 document.getElementById('lastUpdated').textContent = new Date().toLocaleString('vi-VN');
 renderAll();
-prefillConfigForm();
 
-// Boot Firebase if config is available
-const hasConfig = loadFirebaseConfig();
-if (hasConfig && FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY') {
-  initFirebase();
-  document.getElementById('fb-config-hint').style.display = 'none';
-  document.getElementById('btn-signin').style.display = 'block';
-} else {
-  document.getElementById('fb-config-hint').style.display = 'block';
-  document.getElementById('fb-status').textContent = '— Chưa có config';
-}
+// Auto-boot Firebase with hardcoded real config
+document.getElementById('fb-config-hint').style.display = 'none';
+initFirebase();
 </script>
 <!-- ════ FIREBASE TOAST ════ -->
 <div id="fb-toast"></div>
-
-<!-- ════ FIREBASE CONFIG MODAL ════ -->
-<div class="modal-overlay" id="fb-config-modal">
-  <div class="modal" style="max-width:560px;">
-    <div class="modal-title">⚙️ Firebase Config</div>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6;">
-      Dán config từ <strong>Firebase Console → Project Settings → Your apps</strong> vào đây rồi nhấn Lưu. Config sẽ được lưu vào localStorage của trình duyệt.
-    </p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="form-group"><label>API Key</label><input id="cfg-apiKey" placeholder="AIzaSy…"></div>
-      <div class="form-group"><label>Auth Domain</label><input id="cfg-authDomain" placeholder="your-app.firebaseapp.com"></div>
-      <div class="form-group"><label>Project ID</label><input id="cfg-projectId" placeholder="your-project-id"></div>
-      <div class="form-group"><label>Storage Bucket</label><input id="cfg-storageBucket" placeholder="your-app.appspot.com"></div>
-      <div class="form-group"><label>Messaging Sender ID</label><input id="cfg-messagingSenderId" placeholder="123456789"></div>
-      <div class="form-group"><label>App ID</label><input id="cfg-appId" placeholder="1:123:web:abc…"></div>
-    </div>
-
-    <div class="code-block" style="margin-top:14px;">
-      <span class="cmt">// Firestore Security Rules (dán vào Firebase Console → Firestore → Rules)</span><br>
-      rules_version = <span class="val">'2'</span>;<br>
-      service cloud.firestore {<br>
-      &nbsp;&nbsp;match /databases/{database}/documents {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;match /users/{userId}/{document=**} {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if <span class="key">request.auth</span> != null<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;&amp; <span class="key">request.auth.uid</span> == userId;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;}<br>
-      &nbsp;&nbsp;}<br>
-      }
-    </div>
-
-    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.6;">
-      📌 Dữ liệu lưu tại: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;">users/{your-uid}/dashboard/data</code>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('fb-config-modal')">Đóng</button>
-      <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 Lưu & Kết nối</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
