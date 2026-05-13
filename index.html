@@ -1450,57 +1450,112 @@ let _auth = null;  // Auth instance
 let _uid  = null;  // Current user UID
 let _fbReady = false;
 
-/* ─ Boot Firebase (called once SDK is loaded) ─ */
+let _unsubscribe = null; // realtime listener unsubscribe fn
+
+/* ─ Boot Firebase ─ */
 function initFirebase() {
-  if (typeof firebase === 'undefined') return;
+  if (typeof firebase === 'undefined') {
+    setFbStatus('error', '❌ Firebase SDK chưa load');
+    return;
+  }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    _db   = firebase.firestore();
+    _auth = firebase.auth();
+    _fbReady = true;
+    setFbStatus('disconnected', '⏳ Đang xác thực…');
 
-  // Prevent double-init
-  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    _auth.onAuthStateChanged(user => {
+      if (user) {
+        _uid = user.uid;
+        setFbStatus('connected', `✅ ${user.email}`);
+        startRealtimeListener();
+      } else {
+        _uid = null;
+        stopRealtimeListener();
+        setFbStatus('disconnected', '— Chưa đăng nhập');
+      }
+    });
+  } catch(e) {
+    setFbStatus('error', '❌ Init lỗi: ' + e.message);
+  }
+}
 
-  _db   = firebase.firestore();
-  _auth = firebase.auth();
-  _fbReady = true;
+/* ─ Realtime listener (onSnapshot) ─ */
+function startRealtimeListener() {
+  if (!_db || !_uid) return;
+  stopRealtimeListener(); // clear old listener if any
 
-  // Auth state listener
-  _auth.onAuthStateChanged(user => {
-    if (user) {
-      _uid = user.uid;
-      setFbStatus('connected', `✅ ${user.email}`);
-      loadFromFirestore();
+  const docRef = _db
+    .collection(FIRESTORE_COLLECTION)
+    .doc(_uid)
+    .collection('dashboard')
+    .doc('data');
+
+  setFbStatus('connected', '🔄 Đang kết nối realtime…');
+
+  _unsubscribe = docRef.onSnapshot(snap => {
+    if (snap.exists) {
+      const remote = snap.data();
+      const src = snap.metadata.fromCache ? '📦 cache' : '☁️ server';
+      delete remote._savedAt;
+
+      // Migrate if needed
+      if (Array.isArray(remote.goals)) {
+        const yr = String(new Date().getFullYear());
+        remote.goals = { [yr]: remote.goals };
+      }
+      if (Array.isArray(remote.books)) {
+        remote.books = remote.books.map(b => ({ year: new Date().getFullYear(), month: 0, ...b }));
+      }
+
+      state = { ...state, ...remote };
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      renderAll();
+      setFbStatus('connected', `✅ ${_auth.currentUser?.email} · ${src}`);
+      showFbToast(`${src === '☁️ server' ? '☁️' : '📦'} Dữ liệu đã cập nhật`);
     } else {
-      _uid = null;
-      setFbStatus('disconnected', '— Chưa đăng nhập');
+      setFbStatus('connected', `✅ ${_auth.currentUser?.email} · Chưa có data`);
     }
+  }, err => {
+    setFbStatus('error', '❌ Realtime lỗi: ' + err.message);
+    showFbToast('❌ Mất kết nối realtime: ' + err.message);
   });
 }
 
-/* ─ Status helpers ─ */
-function setFbStatus(state, text) {
+function stopRealtimeListener() {
+  if (_unsubscribe) { _unsubscribe(); _unsubscribe = null; }
+}
+
+/* ─ Status helper ─ */
+function setFbStatus(st, text) {
   const el = document.getElementById('fb-status');
   if (!el) return;
   el.textContent = text;
-  el.style.color = state === 'connected' ? 'var(--accent)' : state === 'error' ? 'var(--accent2)' : 'var(--text-muted)';
+  el.style.color = st === 'connected' ? 'var(--accent)' : st === 'error' ? 'var(--accent2)' : 'var(--text-muted)';
 }
 
 /* ─ Google Sign-In ─ */
 function fbSignIn() {
-  if (!_fbReady) return alert('Firebase chưa khởi động. Kiểm tra config.');
+  if (!_fbReady) return alert('Firebase chưa sẵn sàng. Thử reload trang.');
   const provider = new firebase.auth.GoogleAuthProvider();
   _auth.signInWithPopup(provider).catch(e => {
     setFbStatus('error', '❌ ' + e.message);
+    showFbToast('❌ Đăng nhập thất bại: ' + e.code);
   });
 }
 
 /* ─ Sign-Out ─ */
 function fbSignOut() {
   if (!_auth) return;
+  stopRealtimeListener();
   _auth.signOut().then(() => {
     setFbStatus('disconnected', '— Đã đăng xuất');
-    showFbToast('Đã đăng xuất khỏi tài khoản.');
+    showFbToast('Đã đăng xuất.');
   });
 }
 
-/* ─ Save to Firestore ─ */
+/* ─ Save to Firestore (called by saveState debounce) ─ */
 async function saveToFirestore() {
   if (!_db || !_uid) return;
   try {
@@ -1510,38 +1565,18 @@ async function saveToFirestore() {
       .collection('dashboard')
       .doc('data')
       .set({ ...state, _savedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    showFbToast('☁️ Đã lưu lên Firebase');
+    // onSnapshot sẽ tự cập nhật UI — không cần showFbToast ở đây
   } catch(e) {
-    setFbStatus('error', '❌ Lưu thất bại: ' + e.message);
+    setFbStatus('error', '❌ Lưu lỗi: ' + e.message);
+    showFbToast('❌ Lưu thất bại: ' + e.message);
   }
 }
 
-/* ─ Load from Firestore ─ */
+/* ─ Manual load (nút Tải lại) ─ */
 async function loadFromFirestore() {
-  if (!_db || !_uid) return;
-  setFbStatus('connected', '⏳ Đang tải dữ liệu…');
-  try {
-    const snap = await _db
-      .collection(FIRESTORE_COLLECTION)
-      .doc(_uid)
-      .collection('dashboard')
-      .doc('data')
-      .get();
-    if (snap.exists) {
-      const remote = snap.data();
-      delete remote._savedAt;
-      state = { ...state, ...remote };
-      // Also mirror to localStorage as offline cache
-      localStorage.setItem(STATE_KEY, JSON.stringify(state));
-      renderAll();
-      showFbToast('☁️ Đã tải dữ liệu từ Firebase');
-    } else {
-      showFbToast('☁️ Chưa có dữ liệu trên Firebase. Đang dùng dữ liệu cục bộ.');
-    }
-    setFbStatus('connected', `✅ ${_auth.currentUser?.email}`);
-  } catch(e) {
-    setFbStatus('error', '❌ Tải thất bại: ' + e.message);
-  }
+  if (!_db || !_uid) return showFbToast('⚠️ Chưa đăng nhập');
+  // onSnapshot đã realtime — chỉ cần restart listener
+  startRealtimeListener();
 }
 
 /* ─ Toast notification ─ */
@@ -2668,19 +2703,19 @@ function updateFbButtons(loggedIn) {
   document.getElementById('btn-load').style.display    = loggedIn ? 'block' : 'none';
 }
 
-// Override setFbStatus to also toggle buttons
+// Patch setFbStatus to also toggle buttons
 const _origSetFbStatus = setFbStatus;
-function setFbStatus(st, text) {
+window.setFbStatus = function(st, text) {
   _origSetFbStatus(st, text);
   updateFbButtons(st === 'connected');
-}
+};
 
 /* ══ INIT ══ */
 loadState();
 document.getElementById('lastUpdated').textContent = new Date().toLocaleString('vi-VN');
 renderAll();
 
-// Auto-boot Firebase with hardcoded real config
+// Auto-boot Firebase
 document.getElementById('fb-config-hint').style.display = 'none';
 initFirebase();
 </script>
